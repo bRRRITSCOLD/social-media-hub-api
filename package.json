@@ -1,0 +1,38 @@
+{
+  "name": "ts-fastify-starter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "gulp"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/fastify-cors": "^2.1.0",
+    "@types/gulp": "^4.0.6",
+    "@types/mocha": "^5.2.6",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "gulp": "^4.0.2",
+    "gulp-eslint": "^5.0.0",
+    "gulp-prettier": "^2.1.0",
+    "gulp-typescript": "^5.0.1",
+    "mocha": "^6.1.4",
+    "prettier": "^1.17.1",
+    "ts-node": "^8.2.0",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "fastify": "^2.4.1",
+    "fastify-cors": "^2.1.3"
+  }
+}
