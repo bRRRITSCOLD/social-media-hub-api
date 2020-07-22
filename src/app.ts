@@ -1,17 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// node_modules
 import fastify from 'fastify';
+const GQL = require('fastify-gql');
+import { buildSchema } from 'type-graphql';
+import { Container } from 'typedi';
 
-const app = fastify({ logger: true });
+// libraries
+import { env } from './lib/environment';
 
-app.register(require('fastify-cors'), {});
+// app
+const fastifyApp = fastify({ logger: true });
 
-// Declare a route
-app.get('/', async (request: any, reply: any) => {
-  request;
-  reply.code(200);
-  reply.header('Content-Type', 'application/json');
-  reply.send({ message: 'hello world!' });
-  return;
-});
+const bootstrap = async () => {
+  try {
+    fastifyApp.register(require('fastify-cors'), {});
 
-export { app };
+    const schema = await buildSchema({
+      resolvers: [__dirname + `/**/*.resolver.ts`],
+      container: Container,
+    });
+
+    fastifyApp.register(GQL, {
+      schema,
+      graphiql: env.isLocal,
+    });
+
+    return fastifyApp;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export { bootstrap };

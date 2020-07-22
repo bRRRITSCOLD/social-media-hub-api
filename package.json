@@ -13,14 +13,17 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.1.7",
+    "@types/dotenv-safe": "^8.1.0",
     "@types/fastify-cors": "^2.1.0",
     "@types/gulp": "^4.0.6",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/lodash": "^4.14.157",
     "@types/mocha": "^5.2.6",
-    "@typescript-eslint/eslint-plugin": "^1.9.0",
-    "@typescript-eslint/parser": "^1.9.0",
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
     "chai": "^4.2.0",
-    "eslint": "^5.16.0",
-    "eslint-config-prettier": "^4.3.0",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-typescript": "^9.0.0",
     "eslint-plugin-prettier": "^3.1.0",
     "gulp": "^4.0.2",
     "gulp-eslint": "^5.0.0",
@@ -32,7 +35,14 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
+    "aws-sdk": "^2.717.0",
+    "dotenv-safe": "^8.2.0",
     "fastify": "^2.4.1",
-    "fastify-cors": "^2.1.3"
+    "fastify-cors": "^2.1.3",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.19",
+    "signal-exit": "^3.0.3",
+    "type-graphql": "^1.0.0-rc.3",
+    "typedi": "^0.8.0"
   }
 }
