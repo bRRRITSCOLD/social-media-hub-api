@@ -1,7 +1,7 @@
 import { Environment, EnvironmentInterface } from './environment';
 
 export interface EnvInterface extends EnvironmentInterface {
-  PORT: string;
+  PORT: number;
   TIWTTER_CONSUMER_KEY: string;
   TIWTTER_CONSUMER_SECRET: string;
   TIWTTER_ACCESS_TOKEN: string;
@@ -10,8 +10,8 @@ export interface EnvInterface extends EnvironmentInterface {
 
 export class Env extends Environment implements EnvInterface {
   // non-computed values
-  public get PORT(): string {
-    return process.env.PORT as string;
+  public get PORT(): number {
+    return +(process.env.PORT as string) as number;
   }
   public get TIWTTER_CONSUMER_KEY(): string {
     return process.env.TIWTTER_CONSUMER_KEY as string;

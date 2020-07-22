@@ -20,6 +20,10 @@
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "LOCAL",
+        "DATACENTER_AWS": "ONPREM"
+      }
     },
     {
       "type": "node",
