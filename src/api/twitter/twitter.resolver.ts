@@ -1,49 +1,46 @@
-// // node modules
-// import { Resolver, Query, FieldResolver, Root } from 'type-graphql';
-// import * as _ from 'lodash';
-// import { default as iterate } from 'itiriri';
+// node modules
+// import { Resolver, Query, FieldResolver, Root, Args } from 'type-graphql';
+import { Resolver, Query, Ctx } from 'type-graphql';
+import * as _ from 'lodash';
+import { Service } from 'typedi';
 
-// // models
-// import { Match, Matches } from '../../models/matches';
-// import { Team, Teams } from '../../models/teams';
+// models
+// import { AnyObject } from '../../models/any';
+import { Twitter } from '../../models/twitter';
+import { TwitterService } from './twitter.service';
 
-// // services
-// import { MatchService } from './matches.service';
-// import { TeamService } from '../teams/teams.service';
+// libraries
+
+// decorators
 // import { ScopeAuthorization, JWTAuthorization } from '../../decorators/security';
 
-// @Resolver(_of => Match)
-// export class MatchResolver {
-//   public constructor(private matchService: MatchService, private teamService: TeamService) {}
+// services
 
-//   @JWTAuthorization()
-//   @Query(_returns => [Match])
-//   public async matches(): Promise<Match[]> {
-//     try {
-//       const matches: Matches = await this.matchService.fetchAll();
-//       return iterate(matches.MATCHES)
-//         .map((match: Match) => {
-//           return { ...match };
-//         })
-//         .toArray();
-//     } catch (error) {
-//       throw error;
-//     }
-//   }
+@Service()
+@Resolver(_of => Twitter)
+export class TwitterResolver {
+  public constructor(private readonly twitterService: TwitterService) {}
 
-//   @FieldResolver()
-//   public async teams(@Root() match: Match) {
-//     try {
-//       // @ts-ignore
-//       const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
-//       return iterate(tms.TEAMS)
-//         .filter((team: Team) => team.id !== null && team.id !== undefined)
-//         .map((team: Team) => {
-//           return { ...team };
-//         })
-//         .toArray();
-//     } catch (error) {
-//       throw error;
-//     }
-//   }
-// }
+  @Query(_returns => String)
+  public async login(@Ctx() context: any) {
+    const loginTokens = await this.twitterService.login();
+    context.response.header('Set-Cookie', 'myvalue');
+    return `https://twitter.com/oauth/authorize?oauth_token=${loginTokens.oAuthToken}`;
+  }
+
+  // @FieldResolver()
+  // public async teams(@Root() match: Match) {
+  //   try {
+  //     // @ts-ignore
+  //     const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
+  //     return iterate(tms.TEAMS)
+  //       .filter((team: Team) => team.id !== null && team.id !== undefined)
+  //       .map((team: Team) => {
+  //         return { ...team };
+  //       })
+  //       .toArray();
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+}

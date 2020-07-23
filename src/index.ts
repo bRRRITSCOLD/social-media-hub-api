@@ -10,7 +10,7 @@ import { APIError } from './models/error';
 
 // app
 import { bootstrap } from './app';
-import { twitter } from './lib/twitter';
+// import { twitter } from './lib/twitter';
 
 // catch all possible exits in app
 onExit((code: any, signal: any) => {
@@ -40,7 +40,7 @@ process.on('unhandledRejection', (err: any) => {
     // initialize asynchronous libraries, connectiones, etc. here
     await Promise.all([]);
     // initialize synchronous libraries, connectiones, etc. here
-    [twitter.init()];
+    // [twitter.init()];
     // build app
     const app = await bootstrap();
     // start server

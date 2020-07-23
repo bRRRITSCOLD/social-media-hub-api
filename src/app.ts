@@ -22,6 +22,13 @@ const bootstrap = async () => {
     fastifyApp.register(GQL, {
       schema,
       graphiql: env.isLocal,
+      context: (request: any, response: any) => {
+        // Return an object that will be available in your GraphQL resolvers
+        return {
+          request,
+          response
+        }
+      }
     });
 
     return fastifyApp;
