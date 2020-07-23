@@ -21,7 +21,7 @@ export class TwitterService {
         'http://127.0.0.1:8000',
         "HMAC-SHA1"
       );
-      const lol = () => new Promise((res: any, rej: any) => {
+      const getOAuthRequestToken = () => new Promise((res: any, rej: any) => {
         consumer.getOAuthRequestToken((err, oAuthToken, oAuthTokenSecret, results) => {
           if (err) return rej(err);
           return res({
@@ -31,7 +31,7 @@ export class TwitterService {
           });
         })
       })
-      const getOAuthRequestTokenResponse = await lol();
+      const getOAuthRequestTokenResponse = await getOAuthRequestToken();
       return getOAuthRequestTokenResponse;
     } catch (error) {
       throw error;
