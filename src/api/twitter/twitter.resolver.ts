@@ -6,17 +6,17 @@ import { Service } from 'typedi';
 
 // models
 // import { AnyObject } from '../../models/any';
-import cookieSignature from 'cookie-signature';
 import { Twitter } from '../../models/twitter';
-import { TwitterService } from './twitter.service';
-import { env } from '../../lib/environment';
 
 // libraries
+import * as cryptography from '../../lib/cryptography';
+import { env } from '../../lib/environment';
 
 // decorators
 // import { ScopeAuthorization, JWTAuthorization } from '../../decorators/security';
 
 // services
+import { TwitterService } from './twitter.service';
 
 @Service()
 @Resolver((_of: unknown) => Twitter)
@@ -30,7 +30,7 @@ export class TwitterResolver {
     // oAuthRequestToken cookie
     context.response.setCookie(
       'oAuthRequestToken',
-      cookieSignature.sign(
+      cryptography.sign(
         loginTokens.oAuthRequestToken,
         env.COOKIE_SECRET,
       ),
@@ -40,7 +40,7 @@ export class TwitterResolver {
     // oAuthRequestTokenSecret cookie
     context.response.setCookie(
       'oAuthRequestTokenSecret',
-      cookieSignature.sign(
+      cryptography.sign(
         loginTokens.oAuthRequestTokenSecret,
         env.COOKIE_SECRET,
       ),
@@ -53,31 +53,21 @@ export class TwitterResolver {
   @Query((_returns: unknown) => Boolean)
   public async getOAuthAccessToken(@Ctx() context: any): Promise<boolean> {
     const loginTokens = await this.twitterService.getOAuthAccessToken({
-      oAuthRequestToken: cookieSignature.unsign(
+      oAuthRequestToken: cryptography.unsign(
         context.request.cookies.oAuthRequestToken,
         env.COOKIE_SECRET,
       ) as string,
-      oAuthRequestTokenSecret: cookieSignature.unsign(
+      oAuthRequestTokenSecret: cryptography.unsign(
         context.request.cookies.oAuthRequestTokenSecret,
         env.COOKIE_SECRET,
       ) as string,
       oAuthVerifier: '',
     });
     // set and sign the
-    // oAuthRequestToken cookie
-    context.response.setCookie(
-      'oAuthRequestToken',
-      cookieSignature.sign(
-        loginTokens.oAuthRequestToken,
-        env.COOKIE_SECRET,
-      ),
-      { path: '/' },
-    );
-    // set and sign the
     // oAuthRequestTokenSecret cookie
     context.response.setCookie(
       'oAuthRequestTokenSecret',
-      cookieSignature.sign(
+      cryptography.sign(
         loginTokens.oAuthRequestTokenSecret,
         env.COOKIE_SECRET,
       ),

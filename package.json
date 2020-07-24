@@ -13,7 +13,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.1.7",
-    "@types/cookie-signature": "^1.0.3",
     "@types/dotenv-safe": "^8.1.0",
     "@types/fastify-cors": "^2.1.0",
     "@types/gulp": "^4.0.6",
@@ -45,7 +44,6 @@
     "@types/node": "^14.0.24",
     "@types/twit": "^2.2.25",
     "aws-sdk": "^2.717.0",
-    "cookie-signature": "^1.1.0",
     "dotenv-safe": "^8.2.0",
     "fastify": "^3.1.1",
     "fastify-cookie": "^4.0.2",
