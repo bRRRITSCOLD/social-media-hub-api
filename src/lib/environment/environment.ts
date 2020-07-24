@@ -22,6 +22,7 @@ export class Environment implements EnvironmentInterface {
       ...wellmarkEnvironment,
     });
   }
+  [key: string]: unknown;
 
   public get NODE_ENV(): string {
     return process.env.NODE_ENV as string;
@@ -39,7 +40,6 @@ export class Environment implements EnvironmentInterface {
         let initial = true;
         let completed = false;
         const ssm = options.awsConfig ? new SSM(options.awsConfig) : new SSM();
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
         ssm.getParametersByPath = promisify(ssm.getParametersByPath);
         const env = (() => {
@@ -50,9 +50,8 @@ export class Environment implements EnvironmentInterface {
           } catch (err) {
             if (err.name === 'MissingEnvVarsError') {
               return err.missing;
-            } else {
-              throw err;
             }
+            throw err;
           }
         })();
         while (!completed) {
@@ -67,11 +66,11 @@ export class Environment implements EnvironmentInterface {
 
               for (let i = 0; i < found.Parameters.length; i++) {
                 const paramaterFound = env.find(
-                  (e: any) => found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1] === e,
+                  (e: unknown) => found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1] === e,
                 );
-                if (paramaterFound)
-                  process.env[found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1]] =
-                    found.Parameters[i].Value;
+                if (paramaterFound) {
+                  process.env[found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1]] = found.Parameters[i].Value;
+                }
               }
               initial = false;
             } else {
@@ -89,11 +88,11 @@ export class Environment implements EnvironmentInterface {
             found = await ssm.getParametersByPath(prms);
             for (let i = 0; i < found.Parameters.length; i++) {
               const paramaterFound = env.find(
-                (e: any) => found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1] === e,
+                (e: unknown) => found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1] === e,
               );
-              if (paramaterFound)
-                process.env[found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1]] =
-                  found.Parameters[i].Value;
+              if (paramaterFound) {
+                process.env[found.Parameters[i].Name.split('/')[found.Parameters[i].Name.split('/').length - 1]] = found.Parameters[i].Value;
+              }
             }
           }
         }
@@ -109,7 +108,7 @@ export class Environment implements EnvironmentInterface {
     }
   }
 
-  public async init(environmentConfig: { name: string; options?: { ssm?: boolean; example?: string; path?: string; awsConfig?: any } }) {
+  public async init(environmentConfig: { name: string; options?: { ssm?: boolean; example?: string; path?: string; awsConfig?: unknown } }) {
     try {
       // set internals from config
       _.assign(this, {

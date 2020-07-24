@@ -14,6 +14,7 @@ export class APIError implements APIErrorInterface {
   public message!: string;
   public stack?: string;
   public statusCode?: number;
+  [key: string]: unknown;
 
   public constructor(error: any, custom: AnyObject = {}) {
     _.assign(this, {

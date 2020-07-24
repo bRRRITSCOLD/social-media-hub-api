@@ -6,8 +6,10 @@ import { Service } from 'typedi';
 
 // models
 // import { AnyObject } from '../../models/any';
+import cookieSignature from 'cookie-signature';
 import { Twitter } from '../../models/twitter';
 import { TwitterService } from './twitter.service';
+import { env } from '../../lib/environment';
 
 // libraries
 
@@ -17,22 +19,79 @@ import { TwitterService } from './twitter.service';
 // services
 
 @Service()
-@Resolver(_of => Twitter)
+@Resolver((_of: unknown) => Twitter)
 export class TwitterResolver {
   public constructor(private readonly twitterService: TwitterService) {}
 
-  @Query(_returns => String)
-  public async login(@Ctx() context: any) {
-    const loginTokens = await this.twitterService.login();
-    context.response.header('Set-Cookie', 'myvalue');
-    return `https://twitter.com/oauth/authorize?oauth_token=${loginTokens.oAuthToken}`;
+  @Query((_returns: unknown) => String)
+  public async getOAuthRequestToken(@Ctx() context: any): Promise<string> {
+    const loginTokens = await this.twitterService.getOAuthRequestToken();
+    // set and sign the
+    // oAuthRequestToken cookie
+    context.response.setCookie(
+      'oAuthRequestToken',
+      cookieSignature.sign(
+        loginTokens.oAuthRequestToken,
+        env.COOKIE_SECRET,
+      ),
+      { domain: '127.0.0.1:3000', path: '/', secure: true },
+    );
+    // set and sign the
+    // oAuthRequestTokenSecret cookie
+    context.response.setCookie(
+      'oAuthRequestTokenSecret',
+      cookieSignature.sign(
+        loginTokens.oAuthRequestTokenSecret,
+        env.COOKIE_SECRET,
+      ),
+      { domain: '127.0.0.1:3000', path: '/', secure: true },
+    );
+    // return the authorization link
+    return `https://twitter.com/oauth/authorize?oauth_token=${loginTokens.oAuthRequestToken}`;
+  }
+
+  @Query((_returns: unknown) => Boolean)
+  public async getOAuthAccessToken(@Ctx() context: any): Promise<boolean> {
+    const loginTokens = await this.twitterService.getOAuthAccessToken({
+      oAuthRequestToken: cookieSignature.unsign(
+        context.request.cookies.oAuthRequestToken,
+        env.COOKIE_SECRET,
+      ) as string,
+      oAuthRequestTokenSecret: cookieSignature.unsign(
+        context.request.cookies.oAuthRequestTokenSecret,
+        env.COOKIE_SECRET,
+      ) as string,
+      oAuthVerifier: '',
+    });
+    // set and sign the
+    // oAuthRequestToken cookie
+    context.response.setCookie(
+      'oAuthRequestToken',
+      cookieSignature.sign(
+        loginTokens.oAuthRequestToken,
+        env.COOKIE_SECRET,
+      ),
+      { domain: '127.0.0.1', path: '/', secure: true },
+    );
+    // set and sign the
+    // oAuthRequestTokenSecret cookie
+    context.response.setCookie(
+      'oAuthRequestTokenSecret',
+      cookieSignature.sign(
+        loginTokens.oAuthRequestTokenSecret,
+        env.COOKIE_SECRET,
+      ),
+      { domain: '127.0.0.1', path: '/', secure: true },
+    );
+    // return the authorization link
+    return true;
   }
 
   // @FieldResolver()
   // public async teams(@Root() match: Match) {
   //   try {
   //     // @ts-ignore
-  //     const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
+  //     const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: unknown) => team.id));
   //     return iterate(tms.TEAMS)
   //       .filter((team: Team) => team.id !== null && team.id !== undefined)
   //       .map((team: Team) => {

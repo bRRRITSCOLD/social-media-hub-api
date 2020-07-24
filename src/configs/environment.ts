@@ -1,5 +1,5 @@
 // libraries
-import { env } from "../lib/environment";
+import { env } from '../lib/environment';
 
 export default {
   name: 'social-media-hub-api',
@@ -8,4 +8,4 @@ export default {
     path: './.env',
     ssm: !env.isLocal,
   },
-}
+};

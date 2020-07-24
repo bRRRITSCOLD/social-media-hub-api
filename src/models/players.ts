@@ -5,7 +5,7 @@ import { ScopeAuthorization } from '../decorators/security';
 @ObjectType({ description: 'Player model' })
 export class Player {
   @ScopeAuthorization(['*'])
-  @Field(_type => ID, { nullable: true })
+  @Field((_type: unknown) => ID, { nullable: true })
   public id?: number;
 
   @ScopeAuthorization(['*'])

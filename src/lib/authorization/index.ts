@@ -9,14 +9,12 @@ export const authorization = {
       .map((userRole: string) => {
         if (authorizedRoles.includes('*') || authorizedRoles.includes(userRole)) {
           return true;
-        } else {
-          return false;
         }
+        return false;
       })
       .filter((result: boolean) => result !== true);
     // if not authorized throw applicable error
     if (authorized.length === 0) throw new APIError(new Error('Unauthorized'), { statusCode: 403 });
     // return explicitly
-    return;
   },
 };

@@ -104,7 +104,28 @@
       "env": {
         "NODE_ENV": "LOCAL",
         "DATACENTER_ENV": "ONPREM"
-      }
+      },
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch index w/ ts-node",
+      "protocol": "inspector",
+      "args": [
+        "${workspaceFolder}/src/index.ts"
+      ],
+      "cwd": "${workspaceRoot}",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "LOCAL",
+        "DATACENTER_ENV": "ONPREM"
+      },
     }
   ]
 }

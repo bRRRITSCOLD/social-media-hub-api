@@ -36,6 +36,6 @@ import { ObjectType, Field } from 'type-graphql';
 
 @ObjectType({ description: 'Twitter model' })
 export class Twitter {
-  @Field(_type => Boolean, { nullable: true })
+  @Field((_type: unknown) => Boolean, { nullable: true })
   public loggedIn?: boolean;
 }

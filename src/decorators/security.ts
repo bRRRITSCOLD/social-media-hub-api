@@ -2,7 +2,7 @@ import { createMethodDecorator } from 'type-graphql';
 import { MethodAndPropDecorator } from 'type-graphql/dist/decorators/types';
 
 // libraries
-import { authentication } from '../lib/authentication';
+import { jwt } from '../lib/authentication';
 import { authorization } from '../lib/authorization';
 
 export function ScopeAuthorization(): MethodAndPropDecorator;
@@ -11,7 +11,7 @@ export function ScopeAuthorization<RoleType = string>(...roles: RoleType[]): Met
 export function ScopeAuthorization<RoleType = string>(...rolesOrRolesArray: RoleType[]): MethodDecorator | PropertyDecorator {
   return createMethodDecorator(async (ctx: any, next) => {
     authorization.roles(
-      (authentication.jwt.decode(ctx.context.reply.request.headers.authorization) as any).roles as string[],
+      (jwt.decode(ctx.context.reply.request.headers.authorization) as any).roles as string[],
       (rolesOrRolesArray[0] as unknown) as string[],
     );
     return next();
@@ -21,7 +21,7 @@ export function ScopeAuthorization<RoleType = string>(...rolesOrRolesArray: Role
 export function JWTAuthorization(): MethodAndPropDecorator;
 export function JWTAuthorization(): MethodDecorator | PropertyDecorator {
   return createMethodDecorator(async (ctx: any, next) => {
-    authentication.jwt.verify(ctx.context.reply.request.headers.authorization);
+    jwt.verify(ctx.context.reply.request.headers.authorization);
     return next();
   });
 }

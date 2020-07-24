@@ -1,6 +1,8 @@
 // node_modules
 import _ from 'lodash';
-import { ClientSession as MongoClientSession, Db as MongoDb, MongoClient, MongoClientOptions, MongoError } from 'mongodb';
+import {
+  ClientSession as MongoClientSession, Db as MongoDb, MongoClient, MongoClientOptions, MongoError,
+} from 'mongodb';
 import { inspect } from 'util';
 
 /**
@@ -12,21 +14,19 @@ import { inspect } from 'util';
  * @returns {Promise<MongoClient>}
  */
 function mongoClientConnect(uri: string, options: MongoClientOptions): Promise<MongoClient> {
-  return new Promise((res, rej) =>
-    MongoClient.connect(uri, options, (err: MongoError, mongoClient: MongoClient) => {
-      if (err) {
-        return rej(err);
-      }
-      return res(mongoClient);
-    })
-  );
+  return new Promise((res, rej) => MongoClient.connect(uri, options, (err: MongoError, mongoClient: MongoClient) => {
+    if (err) {
+      return rej(err);
+    }
+    return res(mongoClient);
+  }));
 }
 
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-////////////////// Mongo Datasource //////////////////
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// /////////////// Mongo Datasource //////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
 
 /**
  * This interface lays out the contrat/shape
@@ -69,7 +69,7 @@ export class MongoDatasource implements MongoDatasourceInterface {
       config: _.get(params, 'config'),
       client: _.get(params, 'client'),
       database: _.get(params, 'database'),
-      connectionInitTime: new Date()
+      connectionInitTime: new Date(),
       // connectionInitTime: new Date(_.get(params, 'connectionInitTime', new Date()), new Date())
     });
   }
@@ -95,7 +95,7 @@ export class MongoDatasource implements MongoDatasourceInterface {
       const beginningConnectionNotStaleTimeframe = this.connectionInitTime as Date;
       // reference to the end of the window of time
       const endingConnectionNotStaleTimeframe = new Date(
-        beginningConnectionNotStaleTimeframe.getTime() + (this.config as MongoConnectionConfig).connectionStaleTimeframe * 60000
+        beginningConnectionNotStaleTimeframe.getTime() + (this.config as MongoConnectionConfig).connectionStaleTimeframe * 60000,
       );
       // get the hr difference netween now and the reference
       // to the end of the stale conenction window of time
@@ -124,44 +124,44 @@ export class MongoDatasource implements MongoDatasourceInterface {
       // if it needs to throw a TransientTransactionError or
       // MongoNetworkError - we check it ahead of the drivers in an
       // attempt to control bad connections, followed by reconnects
-      (this.client as MongoClient).isConnected({ returnNonCachedInstance: false }) &&
-      (this.client as MongoClient).isConnected({ returnNonCachedInstance: true }) &&
+      (this.client as MongoClient).isConnected({ returnNonCachedInstance: false })
+      && (this.client as MongoClient).isConnected({ returnNonCachedInstance: true })
       // this checks the db's internal topology domain, along
       // with its own isConnected and isDestroyed functionality -
       // the internal mongodb source code uses this to determine
       // if it needs to throw a TransientTransactionError or
       // MongoNetworkError - we check it ahead of the drivers in an
       // attempt to control bad connections, followed by reconnects
-      (this.database as MongoDb | any).topology &&
-      (this.database as MongoDb | any).topology.isConnected({ returnNonCachedInstance: true }) &&
-      (this.database as MongoDb | any).topology.isConnected({ returnNonCachedInstance: false }) &&
-      (this.database as MongoDb | any).topology.isDestroyed({ returnNonCachedInstance: true }) !== true &&
-      (this.database as MongoDb | any).topology.isDestroyed({ returnNonCachedInstance: false }) !== true &&
+      && (this.database as MongoDb | any).topology
+      && (this.database as MongoDb | any).topology.isConnected({ returnNonCachedInstance: true })
+      && (this.database as MongoDb | any).topology.isConnected({ returnNonCachedInstance: false })
+      && (this.database as MongoDb | any).topology.isDestroyed({ returnNonCachedInstance: true }) !== true
+      && (this.database as MongoDb | any).topology.isDestroyed({ returnNonCachedInstance: false }) !== true
       // this checks the db's internal serverConfig domain, along
       // with its own isConnected and isDestroyed functionality -
       // the internal mongodb source code uses this to determine
       // if it needs to throw a TransientTransactionError or
       // MongoNetworkError - we check it ahead of the drivers in an
       // attempt to control bad connections, followed by reconnects
-      (this.database as MongoDb | any).serverConfig &&
-      (this.database as MongoDb | any).serverConfig.isConnected({ returnNonCachedInstance: true }) &&
-      (this.database as MongoDb | any).serverConfig.isConnected({ returnNonCachedInstance: false }) &&
-      (this.database as MongoDb | any).serverConfig.isDestroyed({ returnNonCachedInstance: true }) !== true &&
-      (this.database as MongoDb | any).serverConfig.isDestroyed({ returnNonCachedInstance: false }) !== true &&
+      && (this.database as MongoDb | any).serverConfig
+      && (this.database as MongoDb | any).serverConfig.isConnected({ returnNonCachedInstance: true })
+      && (this.database as MongoDb | any).serverConfig.isConnected({ returnNonCachedInstance: false })
+      && (this.database as MongoDb | any).serverConfig.isDestroyed({ returnNonCachedInstance: true }) !== true
+      && (this.database as MongoDb | any).serverConfig.isDestroyed({ returnNonCachedInstance: false }) !== true
       // this is a custom implementation that allows a user to
       // determine a window of time in which a connection is deemed
       // "fresh" - and if outside of said window of time then it is
       // deemed "stale" and should be reconnected just to be safe
-      this.hasStaleConnection !== true
+      && this.hasStaleConnection !== true
     );
   }
 }
 
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-/////////////// Mongo Connection Config //////////////
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// //////////// Mongo Connection Config //////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
 
 /**
  * This interface lays out the contrat/shape
@@ -207,7 +207,7 @@ export class MongoConnectionConfig implements MongoConnectionConfigInterface {
       options: _.get(params, 'options'),
       connectionStaleTimeframe: _.get(params, 'connectionStaleTimeframe'),
       host: _.get(params, 'host'),
-      port: _.get(params, 'port')
+      port: _.get(params, 'port'),
     });
   }
 
@@ -218,15 +218,15 @@ export class MongoConnectionConfig implements MongoConnectionConfigInterface {
    * @memberof MongoConnectionConfig
    */
   public get uri(): string {
-    return this.port ? `mongodb://${this.host}:${this.port}/` : `mongodb://${this.host}/`;
+    return this.port ? `${this.host}:${this.port}/` : `${this.host}/`;
   }
 }
 
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-//////////////////////// Mongo ///////////////////////
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////// Mongo ///////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
 
 // TODO: fill in MongoInterface information
 /**
@@ -296,7 +296,7 @@ export interface MongoInterface {
  *    // listen on sever or awsServerlessExpress
  *    server.listen() or awsServerlessExpress()
  *  } catch (error) {
- *    await mongo.shutdown().catch((err: any) => {
+ *    await mongo.shutdown().catch((err: unknown) => {
  *      // log error possibly,
  *      // but continue - do not
  *      // allow shutdown error
@@ -345,8 +345,8 @@ export class Mongo implements MongoInterface {
           config: mongoConnectionConfig,
           client: mongoClient,
           database: mongoDb,
-          connectionInitTime: new Date()
-        })
+          connectionInitTime: new Date(),
+        }),
       );
       // return explicitly
       return;
@@ -373,9 +373,10 @@ export class Mongo implements MongoInterface {
         // initiate a holder for the connection tasks
         const connectTasks = [];
         // loop through each item in the current batched chunk
-        for (let j = 0; j < chunkedMongoConnectionConfigs[i].length; j++)
-          // push a call to the internal connect function into the connectTasks array for conecurrent execution
+        for (let j = 0; j < chunkedMongoConnectionConfigs[i].length; j++) {
+        // push a call to the internal connect function into the connectTasks array for conecurrent execution
           connectTasks.push(this.connect(chunkedMongoConnectionConfigs[i][j]));
+        }
         // await all concurrent connect tasks
         // until each is completed
         await Promise.all(connectTasks);
@@ -398,8 +399,7 @@ export class Mongo implements MongoInterface {
   public async verifyConnection(connectionName: string): Promise<void> {
     try {
       // throw error if connection does not exist
-      if (!this.datasources[connectionName] || !this.datasources[connectionName].length)
-        throw new Error(`Mongo connection ${connectionName} does no exist`);
+      if (!this.datasources[connectionName] || !this.datasources[connectionName].length) { throw new Error(`Mongo connection ${connectionName} does no exist`); }
       // create reference for ease
       const mongoDatasource = this.datasources[connectionName][this.datasources[connectionName].length - 1];
       // check to see if the current internal datasource is
@@ -414,11 +414,10 @@ export class Mongo implements MongoInterface {
           const [oldMongoDatasource] = this.datasources[connectionName].splice(0, 1);
           // try catch incase it is undefined by now
           try {
-            (oldMongoDatasource.client as MongoClient).close().catch((err: any) => {
+            (oldMongoDatasource.client as MongoClient).close().catch((err: unknown) => {
               // log error for the end user
               console.log(`Error shutting down mongo connection ${connectionName}. Error = ${JSON.stringify(inspect(err, true))}`);
               // return explicitly
-              return;
             });
           } catch (e) {
             // possibly log
@@ -500,14 +499,13 @@ export class Mongo implements MongoInterface {
           for (let k = 0; k < this.datasources[chunkedConnectionNames[i][j]].length; k++) {
             // execute the close() method on the connection's internal mongo client
             connectionShutdownTasks.push(
-              (this.datasources[chunkedConnectionNames[i][j]][k].client as MongoClient).close().catch((err: any) => {
+              (this.datasources[chunkedConnectionNames[i][j]][k].client as MongoClient).close().catch((err: unknown) => {
                 // log error for the end user
                 console.log(
-                  `Error shutting down mongo connection ${chunkedConnectionNames[i][j]}. Error = ${JSON.stringify(inspect(err, true))}`
+                  `Error shutting down mongo connection ${chunkedConnectionNames[i][j]}. Error = ${JSON.stringify(inspect(err, true))}`,
                 );
                 // return explicitly
-                return;
-              })
+              }),
             );
           }
         }
@@ -523,10 +521,12 @@ export class Mongo implements MongoInterface {
   }
 }
 
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-//////////////////////// Misc ////////////////////////
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////// Misc ////////////////////////
+/// ///////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////
 
-export { MongoClientSession, MongoClient, MongoClientOptions, MongoDb, MongoError };
+export {
+  MongoClientSession, MongoClient, MongoClientOptions, MongoDb, MongoError,
+};

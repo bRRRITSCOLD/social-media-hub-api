@@ -1,38 +1,70 @@
 // node_modules
 import { Service } from 'typedi';
-import * as oauth from 'oauth';
-import { promisify } from 'util';
 
-//models
+// libraries
+import { oAuthConnector, OAuth } from '../../lib/authentication';
+
+// models
 import { env } from '../../lib/environment';
 
 @Service()
 export class TwitterService {
-  public constructor() {}
-
-  public async login(): Promise<any> {
+  public async getOAuthRequestToken(): Promise<{
+    [key: string]: any;
+    [key: number]: any;
+    oAuthRequestToken: string;
+    oAuthRequestTokenSecret: string;
+  }> {
     try {
-      const consumer = new oauth.OAuth(
-        "https://twitter.com/oauth/request_token",
-        "https://twitter.com/oauth/access_token",
-        env.TIWTTER_CONSUMER_KEY,
-        env.TIWTTER_CONSUMER_SECRET,
-        "1.0A",
-        'http://127.0.0.1:8000',
-        "HMAC-SHA1"
-      );
+      const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
       const getOAuthRequestToken = () => new Promise((res: any, rej: any) => {
-        consumer.getOAuthRequestToken((err, oAuthToken, oAuthTokenSecret, results) => {
+        twitterOAuthClient.getOAuthRequestToken((err: any, oAuthRequestToken: string, oAuthRequestTokenSecret: string, results: any) => {
           if (err) return rej(err);
           return res({
-            oAuthToken,
-            oAuthTokenSecret,
-            ...results
+            oAuthRequestToken,
+            oAuthRequestTokenSecret,
+            ...results,
           });
-        })
-      })
+        });
+      });
       const getOAuthRequestTokenResponse = await getOAuthRequestToken();
-      return getOAuthRequestTokenResponse;
+      return getOAuthRequestTokenResponse as {
+        [key: string]: any;
+        [key: number]: any;
+        oAuthRequestToken: string;
+        oAuthRequestTokenSecret: string;
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getOAuthAccessToken(
+    getOAuthAccessTokenRequest: {
+      oAuthRequestToken: string;
+      oAuthRequestTokenSecret: string;
+      oAuthVerifier: string;
+    },
+  ): Promise<any> {
+    try {
+      // deconstruct for ease
+      const { oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier } = getOAuthAccessTokenRequest;
+      // get our twitter oauth client
+      const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
+      // convert/wrap our oauth client
+      // call from a callback to a promise
+      const getOAuthAccessToken = () => new Promise((res: any, rej: any) => {
+        twitterOAuthClient.getOAuthAccessToken(oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier, (err, oauthAccessToken, oauthAccessTokenSecret, results) => {
+          if (err) return rej(err);
+          return res({
+            oauthAccessToken,
+            oauthAccessTokenSecret,
+            ...results,
+          });
+        });
+      });
+      const getOAuthAccessTokenResponse = await getOAuthAccessToken();
+      return getOAuthAccessTokenResponse;
     } catch (error) {
       throw error;
     }
@@ -55,7 +87,7 @@ export class TwitterService {
 //     } else {
 //       req.session.oauthRequestToken = oauthToken;
 //       req.session.oauthRequestTokenSecret = oauthTokenSecret;
-//       const redirect = { 
+//       const redirect = {
 // redirectUrl: `https://twitter.com/oauth/authorize?  oauth_token=${req.session.oauthRequestToken}`
 //     }
 //       res.send(redirect);
