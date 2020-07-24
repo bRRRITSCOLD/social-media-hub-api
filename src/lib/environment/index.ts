@@ -2,6 +2,7 @@ import { Environment, EnvironmentInterface } from './environment';
 
 export interface EnvInterface extends EnvironmentInterface {
   PORT: number;
+  ALLOWED_ORIGINS: string;
   COOKIE_SECRET: string;
   TWITTER_OAUTH_CLIENT_NAME: string;
   TIWTTER_CONSUMER_KEY: string;
@@ -19,6 +20,9 @@ export class Env extends Environment implements EnvInterface {
   // non-computed values
   public get PORT(): number {
     return +(process.env.PORT as string);
+  }
+  public get ALLOWED_ORIGINS(): string {
+    return process.env.ALLOWED_ORIGINS as string;
   }
   public get COOKIE_SECRET(): string {
     return process.env.COOKIE_SECRET as string;

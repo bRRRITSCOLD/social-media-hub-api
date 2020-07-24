@@ -16,7 +16,20 @@ const fastifyApp = fastify({ logger: true });
 const bootstrap = async () => {
   try {
     // cors
-    fastifyApp.register(require('fastify-cors'), {});
+    fastifyApp.register(require('fastify-cors'), {
+      // origin: 'http://127.0.0.1:3000',
+      origin: (origin: string, cb: any) => {
+        if (env.ALLOWED_ORIGINS.split(';').reduce((isAllowed: boolean, allowedOrigin: string) => {
+          // things like swagger/graphiql
+          if (origin === undefined) isAllowed = true;
+          else if (allowedOrigin === '*') isAllowed = true;
+          else if (origin.includes(allowedOrigin)) isAllowed = true;
+          return isAllowed;
+        }, false)) cb(null, true);
+        else cb(new Error('Not allowed'), false);
+      },
+      credentials: true,
+    });
     // cookies
     fastifyApp.register(require('fastify-cookie'), {
       parseOptions: {}, // options for parsing cookies

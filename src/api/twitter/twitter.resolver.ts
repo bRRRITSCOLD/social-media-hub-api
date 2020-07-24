@@ -34,7 +34,7 @@ export class TwitterResolver {
         loginTokens.oAuthRequestToken,
         env.COOKIE_SECRET,
       ),
-      { domain: '127.0.0.1:3000', path: '/', secure: true },
+      { path: '/' },
     );
     // set and sign the
     // oAuthRequestTokenSecret cookie
@@ -44,7 +44,7 @@ export class TwitterResolver {
         loginTokens.oAuthRequestTokenSecret,
         env.COOKIE_SECRET,
       ),
-      { domain: '127.0.0.1:3000', path: '/', secure: true },
+      { path: '/' },
     );
     // return the authorization link
     return `https://twitter.com/oauth/authorize?oauth_token=${loginTokens.oAuthRequestToken}`;
@@ -71,7 +71,7 @@ export class TwitterResolver {
         loginTokens.oAuthRequestToken,
         env.COOKIE_SECRET,
       ),
-      { domain: '127.0.0.1', path: '/', secure: true },
+      { path: '/' },
     );
     // set and sign the
     // oAuthRequestTokenSecret cookie
@@ -81,7 +81,7 @@ export class TwitterResolver {
         loginTokens.oAuthRequestTokenSecret,
         env.COOKIE_SECRET,
       ),
-      { domain: '127.0.0.1', path: '/', secure: true },
+      { path: '/' },
     );
     // return the authorization link
     return true;
