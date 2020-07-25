@@ -4,6 +4,7 @@ export interface EnvInterface extends EnvironmentInterface {
   PORT: number;
   ALLOWED_ORIGINS: string;
   COOKIE_SECRET: string;
+  CRYPTOGRAPHY_KEY: string;
   TWITTER_OAUTH_CLIENT_NAME: string;
   TIWTTER_CONSUMER_KEY: string;
   TIWTTER_CONSUMER_SECRET: string;
@@ -26,6 +27,9 @@ export class Env extends Environment implements EnvInterface {
   }
   public get COOKIE_SECRET(): string {
     return process.env.COOKIE_SECRET as string;
+  }
+  public get CRYPTOGRAPHY_KEY(): string {
+    return process.env.CRYPTOGRAPHY_KEY as string;
   }
   public get TWITTER_OAUTH_CLIENT_NAME(): string {
     return process.env.TWITTER_OAUTH_CLIENT_NAME as string;

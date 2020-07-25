@@ -6,6 +6,9 @@ import { oAuthConnector, OAuth } from '../../lib/authentication';
 
 // models
 import { env } from '../../lib/environment';
+import { logger } from '../../lib/logger';
+import { anyy } from '../../lib/utils';
+import { APIError } from '../../models/error';
 
 @Service()
 export class TwitterService {
@@ -16,7 +19,11 @@ export class TwitterService {
     oAuthRequestTokenSecret: string;
   }> {
     try {
+      // log for debugging and run support purposes
+      logger.debug('{}TwitterService::#getOAuthRequestToken::initiating execution');
+      // get twitter oauth client
       const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
+      // wrap call in promise for use in async/await
       const getOAuthRequestToken = () => new Promise((res: any, rej: any) => {
         twitterOAuthClient.getOAuthRequestToken((err: any, oAuthRequestToken: string, oAuthRequestTokenSecret: string, results: any) => {
           if (err) return rej(err);
@@ -27,14 +34,23 @@ export class TwitterService {
           });
         });
       });
+      // call new wrapped function
       const getOAuthRequestTokenResponse = await getOAuthRequestToken();
+      // log for debugging and run support purposes
+      logger.debug('{}TwitterService::#getOAuthRequestToken::successfully executed');
+      // return resulst explicitly
       return getOAuthRequestTokenResponse as {
         [key: string]: any;
         [key: number]: any;
         oAuthRequestToken: string;
         oAuthRequestTokenSecret: string;
       };
-    } catch (error) {
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.debug(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
+      // throw error explicitly
       throw error;
     }
   }
@@ -45,27 +61,47 @@ export class TwitterService {
       oAuthRequestTokenSecret: string;
       oAuthVerifier: string;
     },
-  ): Promise<any> {
+  ): Promise<{
+      [key: string]: any;
+      [key: number]: any;
+      oAuthAccessToken: string;
+      oAuthAccessTokenSecret: string;
+    }> {
     try {
+      // log for debugging and run support purposes
+      logger.debug('{}TwitterService::#getOAuthAccessToken::initiating execution');
       // deconstruct for ease
       const { oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier } = getOAuthAccessTokenRequest;
-      // get our twitter oauth client
+      // get twitter oauth client
       const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
-      // convert/wrap our oauth client
-      // call from a callback to a promise
+      // wrap call in promise for use in async/await
       const getOAuthAccessToken = () => new Promise((res: any, rej: any) => {
-        twitterOAuthClient.getOAuthAccessToken(oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier, (err, oauthAccessToken, oauthAccessTokenSecret, results) => {
+        twitterOAuthClient.getOAuthAccessToken(oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier, (err, oAuthAccessToken, oAuthAccessTokenSecret, results) => {
           if (err) return rej(err);
           return res({
-            oauthAccessToken,
-            oauthAccessTokenSecret,
+            oAuthAccessToken,
+            oAuthAccessTokenSecret,
             ...results,
           });
         });
       });
+      // call new wrapped function
       const getOAuthAccessTokenResponse = await getOAuthAccessToken();
-      return getOAuthAccessTokenResponse;
-    } catch (error) {
+      // log for debugging and run support purposes
+      logger.debug('{}TwitterService::#getOAuthAccessToken::successfully executed');
+      // return resulst explicitly
+      return getOAuthAccessTokenResponse as {
+        [key: string]: any;
+        [key: number]: any;
+        oAuthAccessToken: string;
+        oAuthAccessTokenSecret: string;
+      };
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.debug(`{}TwitterService::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+      // throw error explicitly
       throw error;
     }
   }
