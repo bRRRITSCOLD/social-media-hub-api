@@ -14,7 +14,7 @@ export interface EnvInterface extends EnvironmentInterface {
   MONGO_SOCIAL_MEDIA_HUB_DB_NAME: string;
   MONGO_SOCIAL_MEDIA_HUB_API_USER: string;
   MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD: string;
-  MONGO_SOCIAL_MEDIA_HUB_TWITTER_CREDENTIALS_COLLECTION_NAME: string;
+  MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME: string;
 }
 
 export class Env extends Environment implements EnvInterface {
@@ -58,8 +58,8 @@ export class Env extends Environment implements EnvInterface {
   public get MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD(): string {
     return process.env.MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD as string;
   }
-  public get MONGO_SOCIAL_MEDIA_HUB_TWITTER_CREDENTIALS_COLLECTION_NAME(): string {
-    return process.env.MONGO_SOCIAL_MEDIA_HUB_TWITTER_CREDENTIALS_COLLECTION_NAME as string;
+  public get MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME(): string {
+    return process.env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME as string;
   }
 
   // computed values

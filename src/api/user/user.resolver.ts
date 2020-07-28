@@ -17,20 +17,13 @@ import { env } from '../../lib/environment';
 // decorators
 // import { ScopeAuthorization, JWTAuthorization } from '../../decorators/security';
 
+// graphql type
+import { RegisterUserArgs } from './user.types';
+
 // services
 import { TwitterService } from './twitter.service';
 import { mongo } from '../../lib/mongo';
-
-/**
- *
- *
- * @class GetOAuthAccessTokenArgs
- */
-@ArgsType()
-export class GetOAuthAccessTokenArgs {
-  @Field((_type: unknown) => String)
-  oAuthVerifier: string;
-}
+import { User } from '../../models/user';
 
 /**
  *
@@ -40,57 +33,14 @@ export class GetOAuthAccessTokenArgs {
  */
 @Service()
 @Resolver((_of: unknown) => Twitter)
-export class TwitterResolver {
-  public constructor(private readonly twitterService: TwitterService) {}
-
-  @Query((_returns: unknown) => String)
-  public async getOAuthRequestToken(@Ctx() context: any): Promise<string> {
-    const loginTokens = await this.twitterService.getOAuthRequestToken();
-    // set and sign the
-    // oAuthRequestToken cookie
-    context.response.setCookie(
-      'oAuthRequestToken',
-      cryptography.sign(
-        loginTokens.oAuthRequestToken,
-        env.COOKIE_SECRET,
-      ),
-      { path: '/', httpOnly: true },
-    );
-    // set and sign the
-    // oAuthRequestTokenSecret cookie
-    context.response.setCookie(
-      'oAuthRequestTokenSecret',
-      cryptography.sign(
-        loginTokens.oAuthRequestTokenSecret,
-        env.COOKIE_SECRET,
-      ),
-      { path: '/', httpOnly: true },
-    );
-    // return the authorization link
-    return `https://twitter.com/oauth/authorize?oauth_token=${loginTokens.oAuthRequestToken}`;
-  }
+export class UserResolver {
+  public constructor(private readonly userService: UserService) {}
 
   @Query((_returns: unknown) => Boolean)
-  public async getOAuthAccessToken(@Ctx() context: any, @Args() getOAuthAccessTokenArgs: GetOAuthAccessTokenArgs): Promise<boolean> {
-    // deconstruct for ease
-    const { oAuthVerifier } = getOAuthAccessTokenArgs;
-    // get tokens that were set in
-    // cookies before this was called
-    const oAuthRequestToken = cryptography.unsign(
-      context.request.cookies.oAuthRequestToken,
-      env.COOKIE_SECRET,
-    ) as string;
-    const oAuthRequestTokenSecret = cryptography.unsign(
-      context.request.cookies.oAuthRequestTokenSecret,
-      env.COOKIE_SECRET,
-    ) as string;
+  public async registerUser(@Args() registerUserArgs: RegisterUserArgs): Promise<boolean> {
     // call service to get
     // access tokens
-    const loginTokens = await this.twitterService.getOAuthAccessToken({
-      oAuthRequestToken,
-      oAuthRequestTokenSecret,
-      oAuthVerifier,
-    });
+    const registeredUser = await this.userService.getOAuthAccessToken(registerUserArgs);
     // encrypt both access tokens
     const encryptedOAuthAccessToken = cryptography.encrypt(loginTokens.oAuthAccessToken);
     const encryptedOAuthAccessTokenSecret = cryptography.encrypt(loginTokens.oAuthAccessTokenSecret);
@@ -104,6 +54,21 @@ export class TwitterResolver {
     // return the authorization link
     return true;
   }
+
+  // // deconstruct for ease
+  // const {
+  //   emailAddress, password, firstName, lastName,
+  // } = registerUserArgs;
+  // // first build a new user instance
+  // const newUser = new User({
+  //   emailAddress,
+  //   firstName,
+  //   lastName,
+  //   password,
+  // });
+  // // validate that the user registration
+  // // information that was passed in
+  // await newUser.validateAsync();
 
   // @FieldResolver()
   // public async teams(@Root() match: Match) {
