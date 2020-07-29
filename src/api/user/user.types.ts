@@ -18,11 +18,6 @@ export class UserType {
   public password?: string | null;
 }
 
-/**
- *
- *
- * @class GetOAuthAccessTokenArgs
- */
 @InputType()
 export class RegisterUserInputType {
   @Field((_type: unknown) => String)
@@ -36,4 +31,22 @@ export class RegisterUserInputType {
 
   @Field((_type: unknown) => String)
   password: string;
+}
+
+@InputType()
+export class LoginInputType {
+  @Field((_type: unknown) => String)
+  emailAddress: string;
+
+  @Field((_type: unknown) => String)
+  password: string;
+
+  @Field((_type: unknown) => String, { nullable: true })
+  ipAddress?: string;
+}
+
+@ObjectType()
+export class UserCredentialsType {
+  @Field((_type: unknown) => String)
+  jwt: string;
 }

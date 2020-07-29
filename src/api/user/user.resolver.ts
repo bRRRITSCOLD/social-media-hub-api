@@ -7,7 +7,6 @@ import * as _ from 'lodash';
 import { Service } from 'typedi';
 
 // models
-// import { AnyObject } from '../../models/any';
 import { Twitter } from '../../models/twitter';
 
 // libraries
@@ -18,66 +17,62 @@ import { Twitter } from '../../models/twitter';
 // import { ScopeAuthorization, JWTAuthorization } from '../../decorators/security';
 
 // graphql type
-import { RegisterUserInputType, UserType } from './user.types';
+import {
+  LoginInputType, RegisterUserInputType, UserType, UserCredentialsType,
+} from './user.types';
 
 // services
 // import { TwitterService } from './twitter.service';
 // import { mongo } from '../../lib/mongo';
 // import { User } from '../../models/user';
 import { UserService } from './user.service';
+import { APIError } from '../../models/error';
+import { logger } from '../../lib/logger';
+import { anyy } from '../../lib/utils';
 
-/**
- *
- *
- * @export
- * @class TwitterResolver
- */
 @Service()
-@Resolver((_of: unknown) => Twitter)
+@Resolver((_of: unknown) => UserType)
 export class UserResolver {
   public constructor(private readonly userService: UserService) {}
 
   @Mutation((_returns: unknown) => UserType)
   public async registerUser(@Arg('data') registerUserInputType: RegisterUserInputType): Promise<UserType> {
-    // call service
-    const registeredUser = await this.userService.registerUser(registerUserInputType);
-    // return the authorization link
-    return {
-      emailAddress: registeredUser.emailAddress,
-      firstName: registeredUser.firstName,
-      lastName: registeredUser.lastName,
-      password: undefined,
-    };
+    try {
+      // call service
+      const registeredUser = await this.userService.registerUser(registerUserInputType);
+      // return the authorization link
+      return {
+        emailAddress: registeredUser.emailAddress,
+        firstName: registeredUser.firstName,
+        lastName: registeredUser.lastName,
+        password: undefined,
+      };
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      // throw error explicitly
+      throw error;
+    }
   }
 
-  // // deconstruct for ease
-  // const {
-  //   emailAddress, password, firstName, lastName,
-  // } = RegisterUserInputType;
-  // // first build a new user instance
-  // const newUser = new User({
-  //   emailAddress,
-  //   firstName,
-  //   lastName,
-  //   password,
-  // });
-  // // validate that the user registration
-  // // information that was passed in
-  // await newUser.validateAsync();
-
-  // @FieldResolver()
-  // public async teams(@Root() match: Match) {
-  //   try {
-  //     // @ts-ignore
-  //     const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: unknown) => team.id));
-  //     return iterate(tms.TEAMS)
-  //       .filter((team: Team) => team.id !== null && team.id !== undefined)
-  //       .map((team: Team) => {
-  //         return { ...team };
-  //       })
-  //       .toArray();
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+  @Mutation((_returns: unknown) => UserCredentialsType)
+  public async login(@Arg('data') loginInputType: LoginInputType): Promise<UserCredentialsType> {
+    try {
+      // call service
+      const userCrendtials = await this.userService.login(loginInputType);
+      // return the authorization link
+      return {
+        jwt: userCrendtials.jwt as string,
+      };
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      // throw error explicitly
+      throw error;
+    }
+  }
 }

@@ -142,6 +142,81 @@ describe('data-management/user integration tests', () => {
     });
   });
 
+  describe('#putUser', () => {
+    context('static data', () => {
+      context("{ user: { ...user, firstName: 'UPDATED' }, putCriteria: { emailAddress }, putOptions: {} }", () => {
+        beforeEach(async () => {
+          try {
+            // create test data
+            testUsers = staticUsers.map((staticUser) => ({
+              ...staticUser,
+              firstName: uuid(),
+            }));
+            // get mongo connection
+            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            // seed data
+            await socialMediaHubDb
+              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .insertMany(testUsers);
+            // return explicitly
+          } catch (err) {
+            // throw explicitly
+            throw err;
+          }
+        });
+
+        afterEach(async () => {
+          try {
+            // teardown
+            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            // clear data
+            await socialMediaHubDb
+              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .deleteMany({});
+            // reset test data
+            testUsers = [];
+            // return explicitly
+          } catch (err) {
+            // throw explicitly
+            throw err;
+          }
+        });
+
+        it('- should create and return a correctly mapped User class instance', async () => {
+          try {
+            // set test data
+            const testUser = { ...testUsers.slice(0, 1)[0], firstName: 'UPDATED' };
+            // set expectations
+            const EXPECTED_USER_CLASS_INSTANCE: any = User;
+            const EXPECTED_USER_DATA: any = { ...testUser };
+            // run testee
+            const putUserResponse = await userManager.putUser({
+              user: _.omitBy({ ...testUser, _id: undefined }, _.isUndefined) as any,
+              putCriteria: { emailAddress: testUser.emailAddress },
+              putOptions: {},
+            });
+            // validate results
+            expect(putUserResponse !== undefined).to.be.true;
+            expect(putUserResponse instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
+            expect(putUserResponse.emailAddress !== undefined).to.be.true;
+            expect(putUserResponse.emailAddress === EXPECTED_USER_DATA.emailAddress).to.be.true;
+            expect(putUserResponse.firstName !== undefined).to.be.true;
+            expect(putUserResponse.firstName === EXPECTED_USER_DATA.firstName).to.be.true;
+            expect(putUserResponse.lastName !== undefined).to.be.true;
+            expect(putUserResponse.lastName === EXPECTED_USER_DATA.lastName).to.be.true;
+            expect(putUserResponse.password !== undefined).to.be.true;
+            expect(putUserResponse.password === EXPECTED_USER_DATA.password).to.be.true;
+            // return explicitly
+            return;
+          } catch (err) {
+            // throw explicitly
+            throw err;
+          }
+        });
+      });
+    });
+  });
+
   after(async () => {
     try {
       // get mongo connection

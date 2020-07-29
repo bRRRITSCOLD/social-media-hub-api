@@ -4,7 +4,6 @@
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as _ from 'lodash';
-import supertest from 'supertest';
 import puppeteer from 'puppeteer';
 import { v4 as uuid } from 'uuid';
 import * as fsExtra from 'fs-extra';
@@ -48,49 +47,5 @@ export const files = {
 export const enumerations = {
   enumerate(enumm: any) {
     return Object.keys(enumm).map((key: any) => enumm[key]);
-  },
-};
-
-export const http = {
-  supertest: {
-    request(httpRequest: {
-      app: any;
-      method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
-      url: string;
-      headers?: { [key: string]: any; };
-      body?: any;
-    }) {
-      return new Promise((resolve: any, reject: any) => {
-        try {
-          // deconstruct for ease
-          const {
-            app,
-            method,
-            url,
-            headers,
-            body,
-          } = httpRequest;
-          // build intial chai request object
-          const request = supertest(app)[method.toLowerCase() as 'get' | 'post' | 'patch' | 'put' |'delete'](url);
-          // send body if one is passed in
-          if (!_.isUndefined(body)) request.send(body);
-          // set headers if any are passed in
-          if (_.isObject(headers) && Object.keys(headers).length > 0) {
-            for (const headerKey of Object.keys(headers)) {
-              request.set(headerKey, headers[headerKey]);
-            }
-          }
-          // now end request
-          request.end((err, res) => {
-            if (err) {
-              return reject(err);
-            }
-            return resolve(res);
-          });
-        } catch (error) {
-          return reject(error);
-        }
-      });
-    },
   },
 };

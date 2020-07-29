@@ -3,6 +3,7 @@ import { Environment, EnvironmentInterface } from './environment';
 export interface EnvInterface extends EnvironmentInterface {
   PORT: number;
   ALLOWED_ORIGINS: string;
+  JWT_SECRET: string;
   COOKIE_SECRET: string;
   CRYPTOGRAPHY_KEY: string;
   TWITTER_OAUTH_CLIENT_NAME: string;
@@ -30,6 +31,12 @@ export class Env extends Environment implements EnvInterface {
   }
   public set ALLOWED_ORIGINS(value: string) {
     process.env.ALLOWED_ORIGINS = `${value}`;
+  }
+  public get JWT_SECRET(): string {
+    return process.env.JWT_SECRET as string;
+  }
+  public set JWT_SECRET(value: string) {
+    process.env.JWT_SECRET = `${value}`;
   }
   public get COOKIE_SECRET(): string {
     return process.env.COOKIE_SECRET as string;

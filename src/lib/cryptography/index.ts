@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 // node_modules
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 // libraries
+import { promisify } from 'util';
 import { env } from '../environment';
 
 // file constants
@@ -77,3 +80,5 @@ export function decrypt(text: string) {
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return decrypted.toString();
 }
+
+export const password = bcrypt;
