@@ -47,7 +47,11 @@ module.exports = {
     'consistent-return': [0],
     '@typescript-eslint/await-thenable': [0],
     'no-loop-func': [0],
-    '@typescript-eslint/require-await': [0]
+    '@typescript-eslint/require-await': [0],
+    'curly': [0],
+    'nonblock-statement-body-position': [0],
+    '@typescript-eslint/no-unused-vars': [0],
+    '@typescript-eslint/no-explicit-any': [0],
   },
   settings: {
     react: {

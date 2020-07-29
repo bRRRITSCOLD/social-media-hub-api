@@ -20,7 +20,11 @@
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
-      "sourceMaps": true
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "LOCAL",
+        "DATACENTER_ENV": "ONPREM"
+      },
     },
     {
       "type": "node",

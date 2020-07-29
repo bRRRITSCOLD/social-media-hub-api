@@ -5,102 +5,50 @@ import { Service } from 'typedi';
 import { oAuthConnector, OAuth } from '../../lib/authentication';
 import { env } from '../../lib/environment';
 import { logger } from '../../lib/logger';
+import { mongo } from '../../lib/mongo';
 import { anyy } from '../../lib/utils';
 
 // models
 import { APIError } from '../../models/error';
+import { User, UserInterface } from '../../models/user';
+
+// data-management
+import * as userManager from '../../data-management/user.manager';
 
 @Service()
 export class UserService {
-  public async getOAuthRequestToken(): Promise<{
-    [key: string]: any;
-    [key: number]: any;
-    oAuthRequestToken: string;
-    oAuthRequestTokenSecret: string;
-  }> {
+  public async registerUser(user: UserInterface): Promise<User> {
     try {
       // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthRequestToken::initiating execution');
-      // get twitter oauth client
-      const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
-      // wrap call in promise for use in async/await
-      const getOAuthRequestToken = () => new Promise((res: any, rej: any) => {
-        twitterOAuthClient.getOAuthRequestToken((err: any, oAuthRequestToken: string, oAuthRequestTokenSecret: string, results: any) => {
-          if (err) return rej(err);
-          return res({
-            oAuthRequestToken,
-            oAuthRequestTokenSecret,
-            ...results,
-          });
-        });
+      logger.debug('{}UserService::#registerUser::initiating execution');
+      // first create a new user instace
+      const newUser = new User(user);
+      // validate that the data passed
+      // in adheres to the user schema
+      const schemaValidation = await newUser.validateAsync();
+      // if there is an error throw said error
+      if (schemaValidation.error) throw new APIError(
+        new Error(schemaValidation.error),
+      );
+      // seach for a user with the current email address passed in
+      const { users: [existingUser] } = await userManager.searchUsers({
+        searchCriteria: { emailAddress: newUser.emailAddress },
+        searchOptions: { pageNumber: 1, pageSize: 1 },
       });
-      // call new wrapped function
-      const getOAuthRequestTokenResponse = await getOAuthRequestToken();
+      // if there is an existing user throw an error -
+      // only one user allowed per email address
+      if (existingUser) throw new APIError(
+        `A user already exists with the email address ${existingUser.emailAddress}`,
+      );
       // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthRequestToken::successfully executed');
+      logger.debug('{}UserService::#registerUser::successfully executed');
       // return resulst explicitly
-      return getOAuthRequestTokenResponse as {
-        [key: string]: any;
-        [key: number]: any;
-        oAuthRequestToken: string;
-        oAuthRequestTokenSecret: string;
-      };
+      return newUser;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
-      // throw error explicitly
-      throw error;
-    }
-  }
-
-  public async getOAuthAccessToken(
-    getOAuthAccessTokenRequest: {
-      oAuthRequestToken: string;
-      oAuthRequestTokenSecret: string;
-      oAuthVerifier: string;
-    },
-  ): Promise<{
-      [key: string]: any;
-      [key: number]: any;
-      oAuthAccessToken: string;
-      oAuthAccessTokenSecret: string;
-    }> {
-    try {
-      // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthAccessToken::initiating execution');
-      // deconstruct for ease
-      const { oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier } = getOAuthAccessTokenRequest;
-      // get twitter oauth client
-      const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
-      // wrap call in promise for use in async/await
-      const getOAuthAccessToken = () => new Promise((res: any, rej: any) => {
-        twitterOAuthClient.getOAuthAccessToken(oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier, (err, oAuthAccessToken, oAuthAccessTokenSecret, results) => {
-          if (err) return rej(err);
-          return res({
-            oAuthAccessToken,
-            oAuthAccessTokenSecret,
-            ...results,
-          });
-        });
-      });
-      // call new wrapped function
-      const getOAuthAccessTokenResponse = await getOAuthAccessToken();
-      // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthAccessToken::successfully executed');
-      // return resulst explicitly
-      return getOAuthAccessTokenResponse as {
-        [key: string]: any;
-        [key: number]: any;
-        oAuthAccessToken: string;
-        oAuthAccessTokenSecret: string;
-      };
-    } catch (err) {
-      // build error
-      const error = new APIError(err);
-      // log for debugging and run support purposes
-      logger.debug(`{}TwitterService::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

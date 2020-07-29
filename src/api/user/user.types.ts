@@ -1,19 +1,21 @@
 // node_modules
-import { ArgsType, Field, ObjectType } from 'type-graphql';
+import {
+  ArgsType, Field, InputType, ObjectType,
+} from 'type-graphql';
 
 @ObjectType({ description: 'User Type' })
 export class UserType {
-  @Field((_type: unknown) => String, { nullable: true })
+  @Field((_type: unknown) => String)
   public firstName: string;
 
-  @Field((_type: unknown) => String, { nullable: true })
+  @Field((_type: unknown) => String)
   public lastName: string;
 
-  @Field((_type: unknown) => String, { nullable: true })
+  @Field((_type: unknown) => String)
   public emailAddress: string;
 
   @Field((_type: unknown) => Boolean, { nullable: true })
-  public password?: boolean;
+  public password?: string | null;
 }
 
 /**
@@ -21,8 +23,8 @@ export class UserType {
  *
  * @class GetOAuthAccessTokenArgs
  */
-@ArgsType()
-export class RegisterUserArgs {
+@InputType()
+export class RegisterUserInputType {
   @Field((_type: unknown) => String)
   firstName: string;
 

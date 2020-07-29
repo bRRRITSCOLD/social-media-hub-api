@@ -16,8 +16,6 @@ import { MockUser } from '../../data/mock/user';
 let mockUsers: Partial<User>[] | Partial<MockUser>[];
 let staticUsers: Partial<User>[] | Partial<MockUser>[];
 
-let testUsers: Partial<User>[] | Partial<MockUser>[];
-
 // tests
 describe('models/user unit tests', () => {
   before(async () => {
@@ -37,7 +35,7 @@ describe('models/user unit tests', () => {
     beforeEach(async () => {
       try {
         // setup
-        testUsers = [];
+        // none
         // return explicitly
       } catch (err) {
         // throw explicitly
@@ -48,7 +46,7 @@ describe('models/user unit tests', () => {
     afterEach(async () => {
       try {
         // teardown
-        testUsers = [];
+        // none
         // return explicitly
       } catch (err) {
         // throw explicitly
@@ -60,7 +58,7 @@ describe('models/user unit tests', () => {
       it('- should create and return a correctly mapped User class instance', () => {
         try {
           // set test data
-          testUsers = staticUsers.slice(0, staticUsers.length);
+          const testUsers = staticUsers.slice(0, staticUsers.length);
           // set expectations
           const EXPECTED_USER_CLASS_INSTANCE: any = User;
           const EXPECTED_USER_DATA: any = testUsers.slice(0, testUsers.length);
@@ -93,7 +91,7 @@ describe('models/user unit tests', () => {
       it('- should create and return a correctly mapped User class instance', () => {
         try {
           // set test data
-          testUsers = mockUsers.slice(0, mockUsers.length);
+          const testUsers = mockUsers.slice(0, mockUsers.length);
           // set expectations
           const EXPECTED_USER_CLASS_INSTANCE: any = User;
           const EXPECTED_USER_DATA: any = testUsers.slice(0, testUsers.length);
@@ -115,6 +113,222 @@ describe('models/user unit tests', () => {
             expect(foundExpectedUser !== undefined).to.be.true;
             return result;
           }, undefined);
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+    });
+
+    describe('#validate', () => {
+      it('- should validate (synchronously) a User class instance and return true when the data matches the defined schema', () => {
+        try {
+          // set test data
+          const testUsers = staticUsers.slice(0, staticUsers.length);
+          // set expectations
+          const EXPECTED_USER_CLASS_INSTANCE: any = User;
+          // run constructor fo all static data
+          testUsers.reduce((result: undefined, testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error === undefined).to.be.true;
+            expect(validation.errors === undefined).to.be.true;
+            expect(validation.warning === undefined).to.be.true;
+            expect(validation.value !== undefined).to.be.true;
+            expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
+            return result;
+          }, undefined);
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should validate (synchronously) a User class instance and return false when the data does not match the defined schema', () => {
+        try {
+          // set test data
+          const testUsers = staticUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          // set expectations
+          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          // run constructor fo all static data
+          testUsers.reduce((result: undefined, testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error !== undefined).to.be.true;
+            expect((validation.error as any).message !== undefined).to.be.true;
+            expect((validation.error as any).message === EXPECTED_VALIDATION_ERROR).to.be.true;
+            return result;
+          }, undefined);
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should validate (synchronously) a User class instance and return true when the data matches the defined schema', () => {
+        try {
+          // set test data
+          const testUsers = mockUsers.slice(0, staticUsers.length);
+          // set expectations
+          const EXPECTED_USER_CLASS_INSTANCE: any = User;
+          // run constructor fo all static data
+          testUsers.reduce((result: undefined, testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error === undefined).to.be.true;
+            expect(validation.errors === undefined).to.be.true;
+            expect(validation.warning === undefined).to.be.true;
+            expect(validation.value !== undefined).to.be.true;
+            expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
+            return result;
+          }, undefined);
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should validate (synchronously) a User class instance and return false when the data does not match the defined schema', () => {
+        try {
+          // set test data
+          const testUsers = mockUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          // set expectations
+          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          // run constructor fo all static data
+          testUsers.reduce((result: undefined, testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error !== undefined).to.be.true;
+            expect((validation.error as any).message !== undefined).to.be.true;
+            expect((validation.error as any).message === EXPECTED_VALIDATION_ERROR).to.be.true;
+            return result;
+          }, undefined);
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+    });
+
+    describe('#validateAsync', () => {
+      it('- should validate (asynchronously) a User class instance and return true when the data matches the defined schema', async () => {
+        try {
+          // set test data
+          const testUsers = staticUsers.slice(0, staticUsers.length);
+          // set expectations
+          const EXPECTED_USER_CLASS_INSTANCE: any = User;
+          // run constructor fo all static data
+          await Promise.all(testUsers.map(async (testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = await user.validateAsync();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error === undefined).to.be.true;
+            expect(validation.errors === undefined).to.be.true;
+            expect(validation.warning === undefined).to.be.true;
+            expect(validation.value !== undefined).to.be.true;
+            expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
+          }));
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should validate (asynchronously) a User class instance and return false when the data does not match the defined schema', async () => {
+        try {
+          // set test data
+          const testUsers = staticUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          // set expectations
+          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          // run constructor fo all static data
+          await Promise.all(testUsers.map(async (testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error !== undefined).to.be.true;
+            expect((validation.error as any).message !== undefined).to.be.true;
+            expect((validation.error as any).message === EXPECTED_VALIDATION_ERROR).to.be.true;
+          }));
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should validate (asynchronously) a User class instance and return true when the data matches the defined schema', async () => {
+        try {
+          // set test data
+          const testUsers = mockUsers.slice(0, staticUsers.length);
+          // set expectations
+          const EXPECTED_USER_CLASS_INSTANCE: any = User;
+          // run constructor fo all static data
+          await Promise.all(testUsers.map(async (testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error === undefined).to.be.true;
+            expect(validation.errors === undefined).to.be.true;
+            expect(validation.warning === undefined).to.be.true;
+            expect(validation.value !== undefined).to.be.true;
+            expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
+          }));
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should validate (asynchronously) a User class instance and return false when the data does not match the defined schema', async () => {
+        try {
+          // set test data
+          const testUsers = mockUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          // set expectations
+          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          // run constructor fo all static data
+          await Promise.all(testUsers.map(async (testUser: any) => {
+            // run testee
+            const user = new User(testUser);
+            const validation = user.validate();
+            // validate results
+            expect(validation !== undefined).to.be.true;
+            expect(validation.error !== undefined).to.be.true;
+            expect((validation.error as any).message !== undefined).to.be.true;
+            expect((validation.error as any).message === EXPECTED_VALIDATION_ERROR).to.be.true;
+          }));
           // return explicitly
           return;
         } catch (err) {
