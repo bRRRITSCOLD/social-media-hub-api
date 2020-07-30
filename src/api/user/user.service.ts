@@ -41,7 +41,7 @@ export class UserService {
       // if there is an existing user throw an error -
       // only one user allowed per email address
       if (existingUser) throw new APIError(
-        `A user already exists with the email address ${existingUser.emailAddress}`,
+        new Error(`A user already exists with the email address ${existingUser.emailAddress}`),
       );
       // get sal rounds for encrypting password
       const saltRounds = await cryptography.password.genSalt();
