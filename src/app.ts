@@ -6,12 +6,16 @@ import { TwitterController } from './api/twitter/twitter.controller';
 
 // libraries
 import { env } from './lib/environment';
-import { APIError } from './models/error';
+import { ErrorInterceptor } from './lib/middleware/error';
 
-const GQL = require('fastify-gql');
+// models
+import { APIError } from './models/error';
 
 // app
 const fastifyApp = fastify({ logger: true });
+
+// file constants
+const GQL = require('fastify-gql');
 
 const bootstrap = async () => {
   try {
@@ -38,6 +42,7 @@ const bootstrap = async () => {
     const schema = await buildSchema({
       resolvers: [`${__dirname}/**/*.resolver.ts`],
       container: Container,
+      globalMiddlewares: [ErrorInterceptor],
     });
     // register graphql
     fastifyApp.register(GQL, {
