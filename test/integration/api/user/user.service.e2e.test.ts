@@ -147,7 +147,7 @@ describe('api/user/user.service integration tests', () => {
     });
   });
 
-  describe('#login', () => {
+  describe('#loginUser', () => {
     context('static data', () => {
       beforeEach(async () => {
         try {
@@ -201,17 +201,17 @@ describe('api/user/user.service integration tests', () => {
           // const EXPECTED_USERS_LENGTH: any = 1;
           const EXPECTED_USER_DATA: any = [testUser].slice(0, 1)[0];
           // run testee
-          const loginResponse = await userService.login({
+          const loginUserResponse = await userService.loginUser({
             emailAddress: testUser.emailAddress as string,
             password: testUser.password as string,
             ipAddress: '127.0.0.1',
           });
           // validate results
-          expect(loginResponse !== undefined).to.be.true;
-          expect(loginResponse !== undefined).to.be.true;
-          expect(loginResponse.jwt !== undefined).to.be.true;
+          expect(loginUserResponse !== undefined).to.be.true;
+          expect(loginUserResponse !== undefined).to.be.true;
+          expect(loginUserResponse.jwt !== undefined).to.be.true;
           // decode jwt
-          const decodedJwt: AnyObject = jwt.decode(loginResponse.jwt as string) as AnyObject;
+          const decodedJwt: AnyObject = jwt.decode(loginUserResponse.jwt as string) as AnyObject;
           // validate results
           expect(decodedJwt !== undefined).to.be.true;
           expect(decodedJwt.emailAddress !== undefined).to.be.true;

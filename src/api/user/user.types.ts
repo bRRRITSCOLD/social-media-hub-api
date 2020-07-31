@@ -34,7 +34,7 @@ export class RegisterUserInputType {
 }
 
 @InputType()
-export class LoginInputType {
+export class LoginUserInputType {
   @Field((_type: unknown) => String)
   emailAddress: string;
 

@@ -265,9 +265,9 @@ describe('data-management/user integration tests', () => {
             expect(parsedBody !== undefined).to.be.true;
             expect(parsedBody.data !== undefined).to.be.true;
             expect(parsedBody.data.login !== undefined).to.be.true;
-            expect(parsedBody.data.login.jwt !== undefined).to.be.true;
+            expect(parsedBody.data.loginUser.jwt !== undefined).to.be.true;
             // decode jwt
-            const decodedJwt: AnyObject = jwt.decode(parsedBody.data.login.jwt as string) as AnyObject;
+            const decodedJwt: AnyObject = jwt.decode(parsedBody.data.loginUser.jwt as string) as AnyObject;
             // validate results
             expect(decodedJwt !== undefined).to.be.true;
             expect(decodedJwt.emailAddress !== undefined).to.be.true;

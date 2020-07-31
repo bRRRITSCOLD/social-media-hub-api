@@ -67,16 +67,16 @@ export class UserService {
     }
   }
 
-  public async login(loginReqeust: { emailAddress: string; password: string; ipAddress?: string; }): Promise<{ jwt: string | null | AnyObject; }> {
+  public async loginUser(loginUserReqeust: { emailAddress: string; password: string; ipAddress?: string; }): Promise<{ jwt: string | null | AnyObject; }> {
     try {
       // log for debugging and run support purposes
-      logger.debug('{}UserService::#registerUser::initiating execution');
+      logger.debug('{}UserService::#loginUser::initiating execution');
       // deconstruct for ease
       const {
         emailAddress,
         password,
         ipAddress,
-      } = loginReqeust;
+      } = loginUserReqeust;
       // seach for a user with the current email address passed in
       const { users: [existingUser] } = await userManager.searchUsers({
         searchCriteria: { emailAddress },
@@ -92,7 +92,7 @@ export class UserService {
         new Error(`Error logging in with email address ${emailAddress}`),
       );
       // log for debugging and run support purposes
-      logger.debug('{}UserService::#registerUser::successfully executed');
+      logger.debug('{}UserService::#loginUser::successfully executed');
       // return resulst explicitly
       return {
         jwt: jwt.sign({
@@ -103,7 +103,7 @@ export class UserService {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.debug(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

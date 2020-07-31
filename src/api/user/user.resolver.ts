@@ -18,7 +18,7 @@ import { Twitter } from '../../models/twitter';
 
 // graphql type
 import {
-  LoginInputType, RegisterUserInputType, UserType, UserCredentialsType,
+  RegisterUserInputType, UserType, UserCredentialsType, LoginUserInputType,
 } from './user.types';
 
 // services
@@ -58,10 +58,10 @@ export class UserResolver {
   }
 
   @Mutation((_returns: unknown) => UserCredentialsType)
-  public async login(@Arg('data') loginInputType: LoginInputType): Promise<UserCredentialsType> {
+  public async loginUser(@Arg('data') loginUserInputType: LoginUserInputType): Promise<UserCredentialsType> {
     try {
       // call service
-      const userCrendtials = await this.userService.login(loginInputType);
+      const userCrendtials = await this.userService.loginUser(loginUserInputType);
       // return the authorization link
       return {
         jwt: userCrendtials.jwt as string,
@@ -70,7 +70,7 @@ export class UserResolver {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.debug(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
