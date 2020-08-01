@@ -3,6 +3,18 @@ import {
   ArgsType, Field, InputType, ObjectType,
 } from 'type-graphql';
 
+@ObjectType({ description: 'User Token Type' })
+export class UserTokenType {
+  @Field((_type: unknown) => String)
+  public type: string;
+
+  @Field((_type: unknown) => String, { nullable: true })
+  public oAuthAccessToken?: string;
+
+  @Field((_type: unknown) => String, { nullable: true })
+  public oAuthAccessTokenSecret?: string;
+}
+
 @ObjectType({ description: 'User Type' })
 export class UserType {
   @Field((_type: unknown) => String)
@@ -16,6 +28,9 @@ export class UserType {
 
   @Field((_type: unknown) => Boolean, { nullable: true })
   public password?: string | null;
+
+  @Field((_type: unknown) => [UserTokenType], { nullable: true })
+  public tokens?: UserTokenType[] | null;
 }
 
 @InputType()

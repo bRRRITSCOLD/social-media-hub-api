@@ -18,7 +18,7 @@ import { User, UserInterface } from '../../models/user';
 import * as userManager from '../../data-management/user.manager';
 import { AnyObject } from '../../models/any';
 
-@Service()
+@Service({ transient: true, global: false })
 export class UserService {
   public async registerUser(user: UserInterface): Promise<User> {
     try {
@@ -31,7 +31,8 @@ export class UserService {
       const schemaValidation = await newUser.validateAsync();
       // if there is an error throw said error
       if (schemaValidation.error) throw new APIError(
-        new Error(schemaValidation.error),
+        schemaValidation.error,
+        { statusCode: 400 },
       );
       // seach for a user with the current email address passed in
       const { users: [existingUser] } = await userManager.searchUsers({

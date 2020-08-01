@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // node_modules
 import { expect } from 'chai';
+import * as _ from 'lodash';
 
 // libraries
 import * as testUtils from '../../lib/utils';
@@ -13,14 +14,15 @@ import { User } from '../../../src/models/user';
 // mock/static data
 import { MockUser } from '../../data/mock/user';
 
-let mockUsers: Partial<User>[] | Partial<MockUser>[];
 let staticUsers: Partial<User>[] | Partial<MockUser>[];
+let mockUsers: Partial<User>[] | Partial<MockUser>[];
 
 // tests
 describe('models/user unit tests', () => {
   before(async () => {
     try {
       // setup
+      // users
       staticUsers = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/users.json`, { encoding: 'utf-8' }));
       mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
       // return explicitly
@@ -137,8 +139,6 @@ describe('models/user unit tests', () => {
             // validate results
             expect(validation !== undefined).to.be.true;
             expect(validation.error === undefined).to.be.true;
-            expect(validation.errors === undefined).to.be.true;
-            expect(validation.warning === undefined).to.be.true;
             expect(validation.value !== undefined).to.be.true;
             expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
             return result;
@@ -154,9 +154,9 @@ describe('models/user unit tests', () => {
       it('- should validate (synchronously) a User class instance and return false when the data does not match the defined schema', () => {
         try {
           // set test data
-          const testUsers = staticUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          const testUsers = staticUsers.slice(0, staticUsers.length).map((testUser: any) => (_.assign({}, testUser, { firstName: 1 })));
           // set expectations
-          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          const EXPECTED_VALIDATION_ERROR: any = 'First Name must be a `string` type, but the final value was: `1`.';
           // run constructor fo all static data
           testUsers.reduce((result: undefined, testUser: any) => {
             // run testee
@@ -180,7 +180,7 @@ describe('models/user unit tests', () => {
       it('- should validate (synchronously) a User class instance and return true when the data matches the defined schema', () => {
         try {
           // set test data
-          const testUsers = mockUsers.slice(0, staticUsers.length);
+          const testUsers = mockUsers.slice(0, mockUsers.length);
           // set expectations
           const EXPECTED_USER_CLASS_INSTANCE: any = User;
           // run constructor fo all static data
@@ -191,8 +191,6 @@ describe('models/user unit tests', () => {
             // validate results
             expect(validation !== undefined).to.be.true;
             expect(validation.error === undefined).to.be.true;
-            expect(validation.errors === undefined).to.be.true;
-            expect(validation.warning === undefined).to.be.true;
             expect(validation.value !== undefined).to.be.true;
             expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
             return result;
@@ -208,9 +206,9 @@ describe('models/user unit tests', () => {
       it('- should validate (synchronously) a User class instance and return false when the data does not match the defined schema', () => {
         try {
           // set test data
-          const testUsers = mockUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          const testUsers = mockUsers.slice(0, mockUsers.length).map((testUser: any) => (_.assign({}, testUser, { firstName: 1 })));
           // set expectations
-          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          const EXPECTED_VALIDATION_ERROR: any = 'First Name must be a `string` type, but the final value was: `1`.';
           // run constructor fo all static data
           testUsers.reduce((result: undefined, testUser: any) => {
             // run testee
@@ -247,8 +245,6 @@ describe('models/user unit tests', () => {
             // validate results
             expect(validation !== undefined).to.be.true;
             expect(validation.error === undefined).to.be.true;
-            expect(validation.errors === undefined).to.be.true;
-            expect(validation.warning === undefined).to.be.true;
             expect(validation.value !== undefined).to.be.true;
             expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
           }));
@@ -263,9 +259,9 @@ describe('models/user unit tests', () => {
       it('- should validate (asynchronously) a User class instance and return false when the data does not match the defined schema', async () => {
         try {
           // set test data
-          const testUsers = staticUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          const testUsers = staticUsers.slice(0, staticUsers.length).map((testUser: any) => (_.assign({}, testUser, { firstName: 1 })));
           // set expectations
-          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          const EXPECTED_VALIDATION_ERROR: any = 'First Name must be a `string` type, but the final value was: `1`.';
           // run constructor fo all static data
           await Promise.all(testUsers.map(async (testUser: any) => {
             // run testee
@@ -288,7 +284,7 @@ describe('models/user unit tests', () => {
       it('- should validate (asynchronously) a User class instance and return true when the data matches the defined schema', async () => {
         try {
           // set test data
-          const testUsers = mockUsers.slice(0, staticUsers.length);
+          const testUsers = mockUsers.slice(0, mockUsers.length);
           // set expectations
           const EXPECTED_USER_CLASS_INSTANCE: any = User;
           // run constructor fo all static data
@@ -299,8 +295,6 @@ describe('models/user unit tests', () => {
             // validate results
             expect(validation !== undefined).to.be.true;
             expect(validation.error === undefined).to.be.true;
-            expect(validation.errors === undefined).to.be.true;
-            expect(validation.warning === undefined).to.be.true;
             expect(validation.value !== undefined).to.be.true;
             expect(validation.value instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
           }));
@@ -315,9 +309,9 @@ describe('models/user unit tests', () => {
       it('- should validate (asynchronously) a User class instance and return false when the data does not match the defined schema', async () => {
         try {
           // set test data
-          const testUsers = mockUsers.slice(0, staticUsers.length).map((testUser: any) => ({ ...testUser, firstName: 1 }));
+          const testUsers = mockUsers.slice(0, mockUsers.length).map((testUser: any) => (_.assign({}, testUser, { firstName: 1 })));
           // set expectations
-          const EXPECTED_VALIDATION_ERROR: any = '"firstName" must be a string';
+          const EXPECTED_VALIDATION_ERROR: any = 'First Name must be a `string` type, but the final value was: `1`.';
           // run constructor fo all static data
           await Promise.all(testUsers.map(async (testUser: any) => {
             // run testee

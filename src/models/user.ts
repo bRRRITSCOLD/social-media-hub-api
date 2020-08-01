@@ -1,50 +1,128 @@
+// node_modules
 import * as _ from 'lodash';
 import Joi from '@hapi/joi';
+import { v4 as uuid } from 'uuid';
+import * as yup from 'yup';
 
+// libraries
+
+/**
+ *
+ *
+ * @export
+ * @interface UserInterface
+ */
 export interface UserInterface {
+  userId: string;
   firstName: string;
   lastName: string;
   emailAddress: string;
   password: string;
+  tokens?: string[];
 }
 
-export const userSchema: Joi.ObjectSchema<UserInterface> = Joi.object({
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
-  emailAddress: Joi.string().required(),
-  password: Joi.string().required(),
+const userSchema: yup.ObjectSchema<any> = yup.object().shape({
+  userId: yup
+    .string()
+    .label('User ID')
+    .required(),
+  firstName: yup
+    .string()
+    .label('First Name')
+    .required(),
+  lastName: yup
+    .string()
+    .label('Last Name')
+    .required(),
+  emailAddress: yup
+    .string()
+    .label('Email')
+    .email()
+    .required(),
+  password: yup
+    .string()
+    .label('Password')
+    .required(),
+  tokens: yup
+    .array()
+    .of(yup.string()),
 });
 
+/**
+ *
+ *
+ * @export
+ * @class User
+ * @implements {UserInterface}
+ */
 export class User implements UserInterface {
+  public userId!: string;
   public firstName!: string;
   public lastName!: string;
   public emailAddress!: string;
   public password!: string;
+  public tokens?: string[];
 
-  public constructor(user: Partial<User>) {
+  /**
+   *Creates an instance of User.
+   * @param {Partial<UserInterface>} user
+   * @memberof User
+   */
+  public constructor(user: Partial<UserInterface>) {
     _.assign(this, {
       ...user,
-      firstName: _.get(user, 'firstName', 'NA'),
-      lastName: _.get(user, 'lastName', 'NA'),
-      emailAddress: _.get(user, 'emailAddress', 'NA'),
-      password: _.get(user, 'password', 'NA'),
+      userId: _.get(user, 'userId', uuid()),
+      firstName: _.get(user, 'firstName'),
+      lastName: _.get(user, 'lastName'),
+      emailAddress: _.get(user, 'emailAddress'),
+      password: _.get(user, 'password'),
+      tokens: _.get(user, 'tokens', []),
     });
   }
 
-  public validate(): Joi.ValidationResult {
+  /**
+   *
+   *
+   * @returns {({ value: User | undefined; error: Error | yup.ValidationError | undefined })}
+   * @memberof User
+   */
+  public validate(): { value: User | undefined; error: Error | yup.ValidationError | undefined } {
     try {
-      const validation: Joi.ValidationResult = userSchema.validate(this);
-      return validation;
+      let validationError;
+      let validationValue: User | undefined;
+      try {
+        validationValue = new User(userSchema.validateSync(
+          _.assign({}, this),
+          { strict: true },
+        ));
+      } catch (err) {
+        validationError = err;
+      }
+      return { value: validationValue, error: validationError };
     } catch (err) {
       throw err;
     }
   }
 
-  public async validateAsync(): Promise<any> {
+  /**
+   *
+   *
+   * @returns {Promise<any>}
+   * @memberof User
+   */
+  public async validateAsync(): Promise<{ value: User | undefined; error: Error | yup.ValidationError | undefined }> {
     try {
-      let validation = await userSchema.validateAsync(this).catch((error: any) => ({ value: this, error }));
-      if (!validation.error) validation = { value: this };
-      return validation;
+      let validationError;
+      let validationValue: User | undefined;
+      try {
+        validationValue = new User(await userSchema.validate(
+          _.assign({}, this),
+          { strict: true },
+        ));
+      } catch (err) {
+        validationError = err;
+      }
+      return { value: validationValue, error: validationError };
     } catch (err) {
       throw err;
     }

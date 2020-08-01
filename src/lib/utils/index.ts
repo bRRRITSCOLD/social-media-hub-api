@@ -17,3 +17,9 @@ export const anyy = {
     return jsonStringifySafe(item);
   },
 };
+
+export const enumerations = {
+  enumerate(enumm: any) {
+    return Object.keys(enumm).map((key: any) => enumm[key]);
+  },
+};

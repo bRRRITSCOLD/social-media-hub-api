@@ -1,8 +1,12 @@
 [
   {
+    "userId": "fn2478fhn9-cj3497vb3479-348c7349h4c-c437878h",
     "firstName": "Bobby",
     "lastName": "Bushay",
     "emailAddress": "test@test.com",
-    "password": "abcd1234"
+    "password": "abcd1234",
+    "tokens": [
+      "sdnf892encu-vn3489vn23inf-vn3489n43o-34nc3489n3"
+    ]
   }
 ]

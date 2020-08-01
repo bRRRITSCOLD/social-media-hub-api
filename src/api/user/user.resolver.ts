@@ -1,7 +1,7 @@
 // node modules
 // import { Resolver, Query, FieldResolver, Root, Args } from 'type-graphql';
 import {
-  Resolver, Mutation, Arg,
+  Resolver, Mutation, Arg, FieldResolver, Root,
 } from 'type-graphql';
 import * as _ from 'lodash';
 import { Service } from 'typedi';
@@ -29,8 +29,9 @@ import { UserService } from './user.service';
 import { APIError } from '../../models/error';
 import { logger } from '../../lib/logger';
 import { anyy } from '../../lib/utils';
+import { UserToken } from '../../models/user';
 
-@Service()
+@Service({ transient: true })
 @Resolver((_of: unknown) => UserType)
 export class UserResolver {
   public constructor(private readonly userService: UserService) {}
@@ -51,7 +52,7 @@ export class UserResolver {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
@@ -70,8 +71,25 @@ export class UserResolver {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
+      throw error;
+    }
+  }
+
+  @FieldResolver()
+  public async tokens(@Root() _user: UserType): Promise<UserToken> {
+    try {
+      // @ts-ignore
+      // const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
+      // return iterate(tms.TEAMS)
+      //   .filter((team: Team) => team.id !== null && team.id !== undefined)
+      //   .map((team: Team) => {
+      //     return { ...team };
+      //   })
+      //   .toArray();
+      return [];
+    } catch (error) {
       throw error;
     }
   }
