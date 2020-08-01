@@ -77,20 +77,20 @@ export class UserResolver {
     }
   }
 
-  @FieldResolver()
-  public async tokens(@Root() _user: UserType): Promise<UserToken> {
-    try {
-      // @ts-ignore
-      // const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
-      // return iterate(tms.TEAMS)
-      //   .filter((team: Team) => team.id !== null && team.id !== undefined)
-      //   .map((team: Team) => {
-      //     return { ...team };
-      //   })
-      //   .toArray();
-      return [];
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @FieldResolver()
+  // public async tokens(@Root() _user: UserType): Promise<UserToken> {
+  //   try {
+  //     // @ts-ignore
+  //     // const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
+  //     // return iterate(tms.TEAMS)
+  //     //   .filter((team: Team) => team.id !== null && team.id !== undefined)
+  //     //   .map((team: Team) => {
+  //     //     return { ...team };
+  //     //   })
+  //     //   .toArray();
+  //     return [];
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 }
