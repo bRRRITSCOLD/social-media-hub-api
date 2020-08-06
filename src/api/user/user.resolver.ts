@@ -5,13 +5,14 @@ import {
 } from 'type-graphql';
 import * as _ from 'lodash';
 import { Service } from 'typedi';
+import { v4 as uuid } from 'uuid';
 
 // models
-import { Twitter } from '../../models/twitter';
+import { APIError } from '../../models/error';
 
 // libraries
-// import * as cryptography from '../../lib/cryptography';
-// import { env } from '../../lib/environment';
+import { logger } from '../../lib/logger';
+import { anyy } from '../../lib/utils';
 
 // decorators
 // import { ScopeAuthorization, JWTAuthorization } from '../../decorators/security';
@@ -22,14 +23,7 @@ import {
 } from './user.types';
 
 // services
-// import { TwitterService } from './twitter.service';
-// import { mongo } from '../../lib/mongo';
-// import { User } from '../../models/user';
 import { UserService } from './user.service';
-import { APIError } from '../../models/error';
-import { logger } from '../../lib/logger';
-import { anyy } from '../../lib/utils';
-import { UserToken } from '../../models/user';
 
 @Service({ transient: true })
 @Resolver((_of: unknown) => UserType)
@@ -40,13 +34,17 @@ export class UserResolver {
   public async registerUser(@Arg('data') registerUserInputType: RegisterUserInputType): Promise<UserType> {
     try {
       // call service
-      const registeredUser = await this.userService.registerUser(registerUserInputType);
+      const registeredUser = await this.userService.registerUser(
+        _.assign({}, registerUserInputType, { userId: uuid() }),
+      );
       // return the authorization link
       return {
+        userId: registeredUser.userId,
         emailAddress: registeredUser.emailAddress,
         firstName: registeredUser.firstName,
         lastName: registeredUser.lastName,
         password: undefined,
+        tokens: undefined,
       };
     } catch (err) {
       // build error

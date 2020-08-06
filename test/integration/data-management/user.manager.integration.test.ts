@@ -1,3 +1,5 @@
+// TODO: add test for tokens property of User class instance in each applicable test
+
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // node_modules
 import { expect } from 'chai';

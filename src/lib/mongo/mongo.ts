@@ -228,7 +228,6 @@ export class MongoConnectionConfig implements MongoConnectionConfigInterface {
 /// ///////////////////////////////////////////////////
 /// ///////////////////////////////////////////////////
 
-// TODO: fill in MongoInterface information
 /**
  *
  *
@@ -239,7 +238,6 @@ export interface MongoInterface {
   datasources: { [key: string]: MongoDatasourceInterface[] };
 }
 
-// TODO: fill in Mongo information
 /**
  *
  *

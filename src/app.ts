@@ -2,14 +2,15 @@
 import fastify from 'fastify';
 import { buildSchema } from 'type-graphql';
 import { Container } from 'typedi';
-import { TwitterController } from './api/twitter/twitter.controller';
 
 // libraries
 import { env } from './lib/environment';
-import { ErrorInterceptor } from './lib/middleware/error';
 
 // models
 import { APIError } from './models/error';
+
+// middleware
+import { ErrorInterceptor } from './lib/middleware/error';
 
 // app
 const fastifyApp = fastify({ logger: true });
@@ -38,6 +39,8 @@ const bootstrap = async () => {
     fastifyApp.register(require('fastify-cookie'), {
       parseOptions: {}, // options for parsing cookies
     });
+    // headers
+    fastifyApp.register(require('fastify-helmet'));
     // build graphql schema
     const schema = await buildSchema({
       resolvers: [`${__dirname}/**/*.resolver.ts`],
@@ -56,8 +59,6 @@ const bootstrap = async () => {
         };
       },
     });
-    // register any non-graphql routes
-    fastifyApp.register(TwitterController);
     // return app explicitly
     return fastifyApp;
   } catch (err) {

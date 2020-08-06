@@ -41,11 +41,15 @@
         "--colors",
         "--recursive",
         "--exit",
-        "${workspaceFolder}/test/*/**.ts"
+        "${workspaceFolder}/test/unit/models/**.ts"
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
-      "sourceMaps": true
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "LOCAL",
+        "DATACENTER_ENV": "ONPREM"
+      }
     },
     {
       "type": "node",
@@ -62,11 +66,16 @@
         "--colors",
         "--recursive",
         "--exit",
-        "${workspaceFolder}/test/integration/*/**.ts"
+        "${workspaceFolder}/test/integration/data-management/**.ts",
+        "${workspaceFolder}/test/integration/api/user/**.ts",
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
-      "sourceMaps": true
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "LOCAL",
+        "DATACENTER_ENV": "ONPREM"
+      }
     },
     {
       "type": "node",
@@ -83,11 +92,15 @@
         "--colors",
         "--recursive",
         "--exit",
-        "${workspaceFolder}/test/e2e/*/**.ts"
+        "${workspaceFolder}/test/e2e/api/user/**.ts",
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
-      "sourceMaps": true
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "LOCAL",
+        "DATACENTER_ENV": "ONPREM"
+      }
     },
     {
       "type": "node",

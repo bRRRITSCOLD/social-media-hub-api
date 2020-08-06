@@ -1,7 +1,7 @@
 // node modules
 // import { Resolver, Query, FieldResolver, Root, Args } from 'type-graphql';
 import {
-  Resolver, Query, Ctx, Args, ArgsType, Field,
+  Resolver, Query, Ctx, Args, ArgsType, Field, Mutation,, Arg
 } from 'type-graphql';
 import * as _ from 'lodash';
 import { Service } from 'typedi';
@@ -20,6 +20,7 @@ import { env } from '../../lib/environment';
 // services
 import { TwitterService } from './twitter.service';
 import { mongo } from '../../lib/mongo';
+import { JWTAuthorization, ScopeAuthorization } from '../../decorators';
 
 /**
  *
@@ -43,43 +44,48 @@ export class GetOAuthAccessTokenArgs {
 export class TwitterResolver {
   public constructor(private readonly twitterService: TwitterService) {}
 
+  @JWTAuthorization()
+  @ScopeAuthorization(['*'])
   @Query((_returns: unknown) => String)
   public async getOAuthRequestToken(@Ctx() context: any): Promise<string> {
-    const loginTokens = await this.twitterService.getOAuthRequestToken();
-    // set and sign the
+    // call service
+    const getOAuthRequestTokenResponse = await this.twitterService.getOAuthRequestToken();
     // oAuthRequestToken cookie
+    context.response.clearCookie('oAuthRequestToken');
     context.response.setCookie(
       'oAuthRequestToken',
       cryptography.sign(
-        loginTokens.oAuthRequestToken,
+        getOAuthRequestTokenResponse.oAuthRequestToken as string,
         env.COOKIE_SECRET,
       ),
       { path: '/', httpOnly: true },
     );
-    // set and sign the
     // oAuthRequestTokenSecret cookie
+    context.response.clearCookie('oAuthRequestTokenSecret');
     context.response.setCookie(
       'oAuthRequestTokenSecret',
       cryptography.sign(
-        loginTokens.oAuthRequestTokenSecret,
+        getOAuthRequestTokenResponse.oAuthRequestTokenSecret as string,
         env.COOKIE_SECRET,
       ),
       { path: '/', httpOnly: true },
     );
     // return the authorization link
-    return `https://twitter.com/oauth/authorize?oauth_token=${loginTokens.oAuthRequestToken}`;
+    return getOAuthRequestTokenResponse.oAuthAccessAuhthorizeUrl as string;
   }
 
+  @JWTAuthorization()
+  @ScopeAuthorization(['*'])
   @Query((_returns: unknown) => Boolean)
   public async getOAuthAccessToken(@Ctx() context: any, @Args() getOAuthAccessTokenArgs: GetOAuthAccessTokenArgs): Promise<boolean> {
     // deconstruct for ease
     const { oAuthVerifier } = getOAuthAccessTokenArgs;
-    // get tokens that were set in
-    // cookies before this was called
+    // oAuthRequestTokenSecret cookie
     const oAuthRequestToken = cryptography.unsign(
       context.request.cookies.oAuthRequestToken,
       env.COOKIE_SECRET,
     ) as string;
+    // oAuthRequestTokenSecret cookie
     const oAuthRequestTokenSecret = cryptography.unsign(
       context.request.cookies.oAuthRequestTokenSecret,
       env.COOKIE_SECRET,
@@ -87,9 +93,9 @@ export class TwitterResolver {
     // call service to get
     // access tokens
     const loginTokens = await this.twitterService.getOAuthAccessToken({
+      oAuthVerifier,
       oAuthRequestToken,
       oAuthRequestTokenSecret,
-      oAuthVerifier,
     });
     // encrypt both access tokens
     const encryptedOAuthAccessToken = cryptography.encrypt(loginTokens.oAuthAccessToken);
@@ -100,7 +106,10 @@ export class TwitterResolver {
     // that they are reusable upon login and use of
     // twitter by a verified and authenticated member -
     // no need to do the who oauth flow again
-
+    // oAuthRequestTokenSecret cookie
+    context.response.clearCookie('oAuthRequestToken');
+    // oAuthRequestTokenSecret cookie
+    context.response.clearCookie('oAuthRequestTokenSecret');
     // return the authorization link
     return true;
   }

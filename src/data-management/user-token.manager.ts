@@ -10,8 +10,9 @@ import { mongo } from '../lib/mongo';
 import { AnyObject } from '../models/any';
 import { APIError } from '../models/error';
 import { User, UserInterface } from '../models/user';
+import { UserToken, UserTokenInterface } from '../models/user-token';
 
-export interface SearchUsersRequestInterface {
+export interface SearchUserTokensRequestInterface {
   searchCriteria: AnyObject;
   searchOptions: {
     pageNumber?: number;
@@ -20,20 +21,20 @@ export interface SearchUsersRequestInterface {
   }
 }
 
-export interface SearchUsersResponseInterface {
-  users: User[];
-  moreUsers: boolean;
-  totalUsers: number | undefined;
+export interface SearchUserTokensResponseInterface {
+  userTokens: UserToken[];
+  moreUserTokens: boolean;
+  totalUserTokens: number | undefined;
 }
 
-export async function searchUsers(
-  searchUsersRequest: SearchUsersRequestInterface,
-): Promise<SearchUsersResponseInterface> {
+export async function searchUserTokens(
+  searchUserTokensRequest: SearchUserTokensRequestInterface,
+): Promise<SearchUserTokensResponseInterface> {
   try {
     // deconstruct for ease
     const {
       searchCriteria, searchOptions,
-    } = searchUsersRequest;
+    } = searchUserTokensRequest;
     let {
       pageNumber,
       pageSize,
@@ -44,15 +45,15 @@ export async function searchUsers(
     if (!pageSize) pageSize = 500;
     if (!totalCount) totalCount = false;
     // create holder for data computations
-    let totalUsers: number | undefined;
+    let totalUserTokens: number | undefined;
     // get mongo connection
     const socialMediaHubMongoDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
     // get cursor
     const cursor = await socialMediaHubMongoDb
-      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
       .find({ ...searchCriteria });
     // get count if wanted by user
-    if (totalCount) totalUsers = await cursor.count();
+    if (totalCount) totalUserTokens = await cursor.count();
     // skip the number of pages times the page size
     cursor.skip(pageSize * (pageNumber - 1));
     // limit to only the page size
@@ -61,34 +62,34 @@ export async function searchUsers(
     const fountItems: UserInterface[] = await cursor.toArray();
     // return explicitly
     return {
-      users: fountItems.slice(0, pageSize).map((foundItem: UserInterface) => new User(foundItem)),
-      moreUsers: fountItems.length > pageSize,
-      totalUsers,
+      userTokens: fountItems.slice(0, pageSize).map((foundItem: UserInterface) => new UserToken(foundItem)),
+      moreUserTokens: fountItems.length > pageSize,
+      totalUserTokens,
     };
   } catch (err) {
     throw err;
   }
 }
 
-export interface PutUserRequestInterface {
-  user: UserInterface;
+export interface PutUserTokenRequestInterface {
+  userToken: UserTokenInterface;
   putCriteria: AnyObject;
   putOptions: Record<string, unknown>;
 }
 
-export async function putUser(
-  putUserRequest: PutUserRequestInterface,
-): Promise<User> {
+export async function putUserToken(
+  putUserTokenRequest: PutUserTokenRequestInterface,
+): Promise<UserToken> {
   try {
     // deconstruct for ease
     const {
-      user, putCriteria,
-    } = putUserRequest;
+      userToken, putCriteria,
+    } = putUserTokenRequest;
     // first create a new user instace
-    const newUser = new User(user);
+    const newUserToken = new UserToken(userToken);
     // validate that the data passed
     // in adheres to the user schema
-    const schemaValidation = await newUser.validateAsync();
+    const schemaValidation = await newUserToken.validateAsync();
     // if there is an error throw said error
     if (schemaValidation.error) throw new APIError(
       schemaValidation.error,
@@ -98,10 +99,10 @@ export async function putUser(
     const socialMediaHubMongoDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
     // get cursor
     const findOneAndUpdateResponse: FindAndModifyWriteOpResultObject<any> = await socialMediaHubMongoDb
-      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
       .findOneAndUpdate(
         _.assign({}, putCriteria),
-        { $set: _.assign({}, newUser) },
+        { $set: _.assign({}, newUserToken) },
         { upsert: true, returnOriginal: false },
       );
     // if mongo query is not ok throw error
@@ -110,7 +111,7 @@ export async function putUser(
       { ...findOneAndUpdateResponse.lastErrorObject },
     );
     // return new user
-    return new User(findOneAndUpdateResponse.value as UserInterface);
+    return new UserToken(findOneAndUpdateResponse.value as UserTokenInterface);
   } catch (err) {
     throw err;
   }

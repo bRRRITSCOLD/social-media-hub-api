@@ -32,7 +32,7 @@ let testUsers: Partial<User>[] | Partial<MockUser>[];
 let app: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>;
 
 // tests
-describe('data-management/user integration tests', () => {
+describe('api/service/user.resolver integration tests', () => {
   before(async () => {
     try {
       // load env

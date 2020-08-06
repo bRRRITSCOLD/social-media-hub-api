@@ -64,7 +64,7 @@ export class LoginUserInputType {
 }
 
 @ObjectType()
-export class UserCredentialsType {
+export class TwitterType {
   @Field((_type: unknown) => String)
   jwt: string;
 }

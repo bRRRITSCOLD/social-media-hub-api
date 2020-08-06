@@ -16,6 +16,7 @@ export interface EnvInterface extends EnvironmentInterface {
   MONGO_SOCIAL_MEDIA_HUB_API_USER: string;
   MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD: string;
   MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME: string;
+  MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME: string;
 }
 
 export class Env extends Environment implements EnvInterface {
@@ -109,6 +110,12 @@ export class Env extends Environment implements EnvInterface {
   }
   public set MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME(value: string) {
     process.env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = `${value}`;
+  }
+  public get MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME(): string {
+    return process.env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME as string;
+  }
+  public set MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME(value: string) {
+    process.env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME = `${value}`;
   }
 
   // computed values

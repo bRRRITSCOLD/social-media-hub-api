@@ -26,9 +26,13 @@ export enum UserTokenTypeEnum {
  */
 export interface UserTokenInterface {
   tokenId: string;
+  userId: string;
   type: UserTokenTypeEnum;
+  oAuthRequestToken?: string;
+  oAuthRequestTokenSecret?: string;
   oAuthAccessToken?: string;
   oAuthAccessTokenSecret?: string;
+  oAuthAccessAuhthorizeUrl?: string;
 }
 
 const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
@@ -36,11 +40,23 @@ const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
     .string()
     .label('Token ID')
     .required(),
+  userId: yup
+    .string()
+    .label('User ID')
+    .required(),
   type: yup
     .string()
     .label('Type')
     .oneOf(enumerations.enumerate(UserTokenTypeEnum))
     .required(),
+  oAuthRequestToken: yup
+    .string()
+    .label('OAuth Request Token')
+    .optional(),
+  oAuthRequestTokenSecret: yup
+    .string()
+    .label('OAuth Request Token Secret')
+    .optional(),
   oAuthAccessToken: yup
     .string()
     .label('OAuth Access Token')
@@ -48,6 +64,10 @@ const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
   oAuthAccessTokenSecret: yup
     .string()
     .label('OAuth Access Token Secret')
+    .optional(),
+  oAuthAccessAuhthorizeUrl: yup
+    .string()
+    .label('OAuth Access Auhthoriz Url')
     .optional(),
 });
 
@@ -60,9 +80,13 @@ const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
  */
 export class UserToken implements UserTokenInterface {
   public tokenId!: string;
+  public userId!: string;
   public type!: UserTokenTypeEnum;
+  public oAuthRequestToken?: string;
+  public oAuthRequestTokenSecret?: string;
   public oAuthAccessToken?: string;
   public oAuthAccessTokenSecret?: string;
+  public oAuthAccessAuhthorizeUrl?: string;
 
   /**
    *Creates an instance of UserToken.
@@ -73,12 +97,19 @@ export class UserToken implements UserTokenInterface {
     _.assign(this, {
       ...userToken,
       tokenId: _.get(userToken, 'tokenId', uuid()),
+      userId: _.get(userToken, 'userId', uuid()),
       type: _.get(userToken, 'type', UserTokenTypeEnum.NA),
+      oAuthRequestToken: _.get(userToken, 'oAuthRequestToken'),
+      oAuthRequestTokenSecret: _.get(userToken, 'oAuthRequestTokenSecret'),
       oAuthAccessToken: _.get(userToken, 'oAuthAccessToken'),
       oAuthAccessTokenSecret: _.get(userToken, 'oAuthAccessTokenSecret'),
+      oAuthAccessAuhthorizeUrl: _.get(userToken, 'oAuthAccessAuhthorizeUrl'),
     });
   }
 
+  public get isTwitterUserToken(): boolean {
+    return this.type.toUpperCase() === UserTokenTypeEnum.TWITTER;
+  }
   /**
    *
    *

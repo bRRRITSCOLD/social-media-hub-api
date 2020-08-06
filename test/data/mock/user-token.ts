@@ -15,6 +15,7 @@ export class MockUserToken extends UserToken {
   public constructor() {
     const mockUserToken: UserTokenInterface = {
       tokenId: uuid(),
+      userId: uuid(),
       type: _.sample([...enumerations.enumerate(UserTokenTypeEnum)]),
       oAuthAccessToken: uuid(),
       oAuthAccessTokenSecret: uuid(),
