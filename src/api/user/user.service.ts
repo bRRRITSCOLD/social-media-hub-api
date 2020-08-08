@@ -4,19 +4,19 @@ import * as _ from 'lodash';
 
 // libraries
 import { oAuthConnector, OAuth, jwt } from '../../lib/authentication';
-import { env } from '../../lib/environment';
 import { logger } from '../../lib/logger';
-import { mongo } from '../../lib/mongo';
 import { anyy } from '../../lib/utils';
 import * as cryptography from '../../lib/cryptography';
 
 // models
 import { APIError } from '../../models/error';
 import { User, UserInterface } from '../../models/user';
+import { UserToken, UserTokenTypeEnum } from '../../models/user-token';
+import { AnyObject } from '../../models/any';
 
 // data-management
 import * as userManager from '../../data-management/user.manager';
-import { AnyObject } from '../../models/any';
+import * as userTokenManager from '../../data-management/user-token.manager';
 
 @Service({ transient: true, global: false })
 export class UserService {
@@ -83,6 +83,11 @@ export class UserService {
         searchCriteria: { emailAddress },
         searchOptions: { pageNumber: 1, pageSize: 1 },
       });
+      // grab a user's tokens
+      const { userTokens: existingUserTokens } = await userTokenManager.searchUserTokens({
+        searchCriteria: { userId: existingUser.userId },
+        searchOptions: { pageNumber: 1, pageSize: 1 },
+      });
       // if there is an existing user throw an error -
       // only one user allowed per email address
       if (!existingUser) throw new APIError(
@@ -92,12 +97,26 @@ export class UserService {
       if (!await cryptography.password.compare(password, existingUser.password)) throw new APIError(
         new Error(`Error logging in with email address ${emailAddress}`),
       );
+      // create a users roles
+      const roles: string[] = [];
+      // first based off user tokens
+      roles.push(...existingUserTokens.reduce((userRoles: string[], existingUserToken: UserToken) => {
+        if (
+          existingUserToken.type === UserTokenTypeEnum.TWITTER
+          && existingUserToken.oAuthAccessToken
+          && existingUserToken.oAuthAccessTokenSecret
+        ) {
+          userRoles.push('Twitter User');
+        }
+        return userRoles;
+      }, []));
       // log for debugging and run support purposes
       logger.debug('{}UserService::#loginUser::successfully executed');
       // return resulst explicitly
       return {
         jwt: jwt.sign({
-          emailAddress: existingUser.emailAddress,
+          userId: existingUser.userId,
+          roles,
         }),
       };
     } catch (err) {
