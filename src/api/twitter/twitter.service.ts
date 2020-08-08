@@ -4,16 +4,14 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // libraries
-import { oAuthConnector, OAuth, jwt } from '../../lib/authentication';
+import { oAuthConnector, OAuth, jwt as jsonwebtoken } from '../../lib/authentication';
 import { env } from '../../lib/environment';
 import { logger } from '../../lib/logger';
 import { anyy } from '../../lib/utils';
-import * as cryptography from '../../lib/cryptography';
 
 // models
 import { APIError } from '../../models/error';
 import { UserToken, UserTokenTypeEnum } from '../../models/user-token';
-import { User } from '../../models/user';
 
 // models
 import * as userManager from '../../data-management/user.manager';
@@ -21,34 +19,19 @@ import * as userTokenManager from '../../data-management/user-token.manager';
 
 @Service()
 export class TwitterService {
-  public async getOAuthRequestToken(data: {jwt: string; }): Promise<UserToken> {
+  public async getOAuthRequestToken(): Promise<UserToken> {
     try {
       // log for debugging and run support purposes
       logger.debug('{}TwitterService::#getOAuthRequestToken::initiating execution');
-      // get and possibly existing twitter o auth token
-      const [
-        { users: [existingUser] },
-        { userTokens: [existingUserToken] },
-      ] = await Promise.all([
-        userManager.searchUsers({
-          searchCriteria: { emailAddress: _.get(jwt.decode(data.jwt), 'emailAddress', '') },
-          searchOptions: {
-            pageNumber: 1,
-            pageSize: Number.MAX_SAFE_INTEGER,
-          },
-        }),
-        userTokenManager.searchUserTokens({
-          searchCriteria: { emailAddress: _.get(jwt.decode(data.jwt), 'emailAddress', '') },
-          searchOptions: {
-            pageNumber: 1,
-            pageSize: Number.MAX_SAFE_INTEGER,
-          },
-        }),
-      ]);
       // get twitter oauth client
       const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
       // wrap call in promise for use in async/await
-      const getOAuthRequestToken = (): Promise<any> => new Promise((res: any, rej: any) => {
+      const getOAuthRequestToken = (): Promise<{
+        [key: string]: any;
+        [key: number]: any;
+        oAuthRequestToken: string;
+        oAuthRequestTokenSecret: string;
+      }> => new Promise((res: any, rej: any) => {
         twitterOAuthClient.getOAuthRequestToken((err: any, oAuthRequestToken: string, oAuthRequestTokenSecret: string, results: any) => {
           if (err) return rej(err);
           return res({
@@ -61,10 +44,9 @@ export class TwitterService {
       // call new wrapped function
       const getOAuthRequestTokenResponse = await getOAuthRequestToken();
       // store the encrypted and signed values in mongo
-      const newUserTwitterToken = new UserToken(
+      const newPartialUserTwitterToken = new UserToken(
         _.assign(
           {},
-          existingUserToken || {},
           {
             oAuthRequestToken: getOAuthRequestTokenResponse.oAuthRequestToken,
             oAuthRequestTokenSecret: getOAuthRequestTokenResponse.oAuthRequestTokenSecret,
@@ -72,20 +54,10 @@ export class TwitterService {
           },
         ),
       );
-      // get sal rounds for encrypting password
-      const saltRounds = await cryptography.password.genSalt();
-      // encrpyt a user's password
-      existingUserToken.oAuthRequestToken = await cryptography.password.hash(newUserTwitterToken.oAuthRequestToken, saltRounds);
-      existingUserToken.oAuthRequestTokenSecret = await cryptography.password.hash(newUserTwitterToken.oAuthRequestTokenSecret, saltRounds);
-      // store tokens
-      await userTokenManager.putUserToken({
-        userToken: _.assign(),
-        putCriteria: { userId: '', userTokenId: '' },
-      });
       // log for debugging and run support purposes
       logger.debug('{}TwitterService::#getOAuthRequestToken::successfully executed');
       // return resulst explicitly
-      return userTwitterToken;
+      return newPartialUserTwitterToken;
     } catch (err) {
       // build error
       const error = new APIError(err);
@@ -108,21 +80,30 @@ export class TwitterService {
       // log for debugging and run support purposes
       logger.debug('{}TwitterService::#getOAuthAccessToken::initiating execution');
       // deconstruct for ease
-      const { oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier } = getOAuthAccessTokenRequest;
-      // get and possibly existing twitter o auth token
+      const {
+        jwt,
+        oAuthRequestToken,
+        oAuthRequestTokenSecret,
+        oAuthVerifier,
+      } = data;
+      // query for the user that is attempting to
+      // get the oauth request token for twitter
       const [
-        { users: [existingUser] },
+        { users: [user] },
         { userTokens: [existingUserToken] },
       ] = await Promise.all([
         userManager.searchUsers({
-          searchCriteria: { emailAddress: _.get(jwt.decode(data.jwt), 'emailAddress', '') },
+          searchCriteria: { userId: _.get(jsonwebtoken.decode(jwt), 'userId', '') },
           searchOptions: {
             pageNumber: 1,
             pageSize: Number.MAX_SAFE_INTEGER,
           },
         }),
         userTokenManager.searchUserTokens({
-          searchCriteria: { emailAddress: _.get(jwt.decode(data.jwt), 'emailAddress', '') },
+          searchCriteria: {
+            emailAddress: { userId: _.get(jsonwebtoken.decode(jwt), 'userId', '') },
+            type: UserTokenTypeEnum.TWITTER,
+          },
           searchOptions: {
             pageNumber: 1,
             pageSize: Number.MAX_SAFE_INTEGER,
@@ -133,8 +114,18 @@ export class TwitterService {
       // get twitter oauth client
       const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
       // wrap call in promise for use in async/await
-      const getOAuthAccessToken = () => new Promise((res: any, rej: any) => {
-        twitterOAuthClient.getOAuthAccessToken(oAuthRequestToken, oAuthRequestTokenSecret, oAuthVerifier, (err, oAuthAccessToken, oAuthAccessTokenSecret, results) => {
+      const getOAuthAccessToken = (getOAuthAccessTokenReqeust: { oAuthReqToken: string, oAuthReqTokenSecret: string, oAuthVer: string }): Promise<{
+        oAuthAccessToken: string;
+        oAuthAccessTokenSecret: string;
+      }> => new Promise((res: any, rej: any) => {
+        // deconstruct for easr
+        const {
+          oAuthReqToken,
+          oAuthReqTokenSecret,
+          oAuthVer,
+        } = getOAuthAccessTokenReqeust;
+        // use twitter client to get tokens
+        twitterOAuthClient.getOAuthAccessToken(oAuthReqToken, oAuthReqTokenSecret, oAuthVer, (err, oAuthAccessToken, oAuthAccessTokenSecret, results) => {
           if (err) return rej(err);
           return res({
             oAuthAccessToken,
@@ -144,16 +135,52 @@ export class TwitterService {
         });
       });
       // call new wrapped function
-      const getOAuthAccessTokenResponse = await getOAuthAccessToken();
+      const getOAuthAccessTokenResponse = await getOAuthAccessToken({
+        oAuthReqToken: oAuthRequestToken,
+        oAuthReqTokenSecret: oAuthRequestTokenSecret,
+        oAuthVer: oAuthVerifier,
+      });
+      // if an existing user token was found then
+      // replace it with an updated UserToken
+      // instance that has the new access tokens
+      if (existingUserToken) {
+        await userTokenManager.putUserToken({
+          userToken: _.assign(
+            {},
+            existingUserToken || {},
+            {
+              oAuthAuthAccessToken: getOAuthAccessTokenResponse.oAuthAccessToken,
+              oAuthAccessTokenSecret: getOAuthAccessTokenResponse.oAuthAccessTokenSecret,
+            },
+          ),
+          putCriteria: {
+            userId: user.userId,
+            tokenId: existingUserToken.tokenId,
+            type: UserTokenTypeEnum.TWITTER,
+          },
+          putOptions: {},
+        });
+      // else create a brand new token
+      } else {
+        await userTokenManager.putUserToken({
+          userToken: {
+            userId: user.userId,
+            tokenId: uuid(),
+            type: UserTokenTypeEnum.TWITTER,
+            oAuthAccessToken: getOAuthAccessTokenResponse.oAuthAccessToken,
+            oAuthAccessTokenSecret: getOAuthAccessTokenResponse.oAuthAccessTokenSecret,
+          },
+          putCriteria: {
+            userId: user.userId,
+            type: UserTokenTypeEnum.TWITTER,
+          },
+          putOptions: {},
+        });
+      }
       // log for debugging and run support purposes
       logger.debug('{}TwitterService::#getOAuthAccessToken::successfully executed');
       // return resulst explicitly
-      return getOAuthAccessTokenResponse as {
-        [key: string]: any;
-        [key: number]: any;
-        oAuthAccessToken: string;
-        oAuthAccessTokenSecret: string;
-      };
+      return true;
     } catch (err) {
       // build error
       const error = new APIError(err);
@@ -164,45 +191,3 @@ export class TwitterService {
     }
   }
 }
-
-// const consumer = new oauth.OAuth("https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",_twitterConsumerKey, _twitterConsumerSecret, "1.0A", twitterCallbackUrl, "HMAC-SHA1");
-// const express = require('express');
-// const router = express.Router();
-// const CryptoJS = require("crypto-js");
-// const oauth = require('oauth');
-// const _twitterConsumerKey = process.env.TWITTER_CONSUMER_KEY;
-// const _twitterConsumerSecret = process.env.TWITTER_CONSUMER_SECRET;
-// const twitterCallbackUrl = process.env.TWITTER_CALLBACK_URL;
-// const consumer = new oauth.OAuth("https://twitter.com/oauth/request_token", "https://twitter.com/oauth/access_token",_twitterConsumerKey, _twitterConsumerSecret, "1.0A", twitterCallbackUrl, "HMAC-SHA1");
-// router.get('/connect', (req, res) => {
-//   consumer.getOAuthRequestToken(function (error, oauthToken,   oauthTokenSecret, results) {
-//     if (error) {
-//       res.send(error, 500);
-//     } else {
-//       req.session.oauthRequestToken = oauthToken;
-//       req.session.oauthRequestTokenSecret = oauthTokenSecret;
-//       const redirect = {
-// redirectUrl: `https://twitter.com/oauth/authorize?  oauth_token=${req.session.oauthRequestToken}`
-//     }
-//       res.send(redirect);
-//     }
-//   });
-// });
-// router.get('/saveAccessTokens', authCheck, (req, res) => {
-//   consumer.getOAuthAccessToken(
-//   req.query.oauth_token,
-//   req.session.oauthRequestTokenSecret,
-//   req.query.oauth_verifier,
-//   (error, oauthAccessToken, oauthAccessTokenSecret, results) => {
-//     if (error) {
-//       logger.error(error);
-//       res.send(error, 500);
-//     }
-//     else {
-//       req.session.oauthAccessToken = oauthAccessToken;
-//       req.session.oauthAccessTokenSecret = oauthAccessTokenSecret
-//       return res.send({ message: 'token saved' });
-//     }
-//   });
-// });
-// module.exports = router;

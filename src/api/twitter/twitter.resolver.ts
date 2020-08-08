@@ -1,7 +1,13 @@
 // node modules
 // import { Resolver, Query, FieldResolver, Root, Args } from 'type-graphql';
 import {
-  Resolver, Query, Ctx, Args, ArgsType, Field, Mutation,, Arg
+  Resolver,
+  Query,
+  Ctx,
+  Args,
+  ArgsType,
+  Field,
+  Mutation,
 } from 'type-graphql';
 import * as _ from 'lodash';
 import { Service } from 'typedi';
@@ -19,7 +25,6 @@ import { env } from '../../lib/environment';
 
 // services
 import { TwitterService } from './twitter.service';
-import { mongo } from '../../lib/mongo';
 import { JWTAuthorization, ScopeAuthorization } from '../../decorators';
 
 /**
@@ -76,7 +81,7 @@ export class TwitterResolver {
 
   @JWTAuthorization()
   @ScopeAuthorization(['*'])
-  @Query((_returns: unknown) => Boolean)
+  @Mutation((_returns: unknown) => Boolean)
   public async getOAuthAccessToken(@Ctx() context: any, @Args() getOAuthAccessTokenArgs: GetOAuthAccessTokenArgs): Promise<boolean> {
     // deconstruct for ease
     const { oAuthVerifier } = getOAuthAccessTokenArgs;
@@ -92,25 +97,20 @@ export class TwitterResolver {
     ) as string;
     // call service to get
     // access tokens
-    const loginTokens = await this.twitterService.getOAuthAccessToken({
+    await this.twitterService.getOAuthAccessToken({
+      jwt: context.request.headers.authorization,
       oAuthVerifier,
       oAuthRequestToken,
       oAuthRequestTokenSecret,
     });
-    // encrypt both access tokens
-    const encryptedOAuthAccessToken = cryptography.encrypt(loginTokens.oAuthAccessToken);
-    const encryptedOAuthAccessTokenSecret = cryptography.encrypt(loginTokens.oAuthAccessTokenSecret);
-    // get mongo connection
-    const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-    // store the tokens in mongo so
-    // that they are reusable upon login and use of
-    // twitter by a verified and authenticated member -
-    // no need to do the who oauth flow again
-    // oAuthRequestTokenSecret cookie
+    // clear oAuthRequestToken cookie if we
+    // have gotten this far - if we have we have been successful
     context.response.clearCookie('oAuthRequestToken');
-    // oAuthRequestTokenSecret cookie
+    // clear oAuthRequestTokenSecret cookie if we
+    // have gotten this far - if we have we have been successful
     context.response.clearCookie('oAuthRequestTokenSecret');
-    // return the authorization link
+    // return true indicating
+    // we have authed with twitter
     return true;
   }
 
