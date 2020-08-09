@@ -158,7 +158,7 @@ export class TwitterService {
         oAuthVer: oAuthVerifier,
       });
       // create the new user token
-      const twitterAccessUserToken = new UserToken(_.assign(
+      const newTwitterAccessUserToken = new UserToken(_.assign(
         {},
         existingUserToken || {},
         _.omitBy({
@@ -173,10 +173,10 @@ export class TwitterService {
       // replace it with an updated UserToken
       // instance that has the new access tokens
       await userTokenManager.putUserToken({
-        userToken: twitterAccessUserToken,
+        userToken: newTwitterAccessUserToken,
         putCriteria: _.omitBy({
-          userId: twitterAccessUserToken.userId,
-          tokenId: twitterAccessUserToken.tokenId,
+          userId: newTwitterAccessUserToken.userId,
+          tokenId: newTwitterAccessUserToken.tokenId,
           type: UserTokenTypeEnum.TWITTER,
         }, _.isUndefined),
         putOptions: {},
