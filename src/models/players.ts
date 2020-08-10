@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from 'type-graphql';
 
-import { ScopeAuthorization } from '../decorators/security';
+import { ScopeAuthorization } from '../lib/decorators/security';
 
 @ObjectType({ description: 'Player model' })
 export class Player {

@@ -3,7 +3,8 @@ import { Service } from 'typedi';
 import * as _ from 'lodash';
 
 // libraries
-import { oAuthConnector, OAuth, jwt } from '../../lib/authentication';
+import { STANDARD_USER_ROLE } from '../../lib/authorization';
+import { jwt } from '../../lib/authentication';
 import { logger } from '../../lib/logger';
 import { anyy } from '../../lib/utils';
 import * as cryptography from '../../lib/cryptography';
@@ -23,7 +24,7 @@ export class UserService {
   public async registerUser(user: UserInterface): Promise<User> {
     try {
       // log for debugging and run support purposes
-      logger.debug('{}UserService::#registerUser::initiating execution');
+      logger.info('{}UserService::#registerUser::initiating execution');
       // first create a new user instace
       const newUser = new User(_.assign({}, user));
       // validate that the data passed
@@ -55,14 +56,14 @@ export class UserService {
         putOptions: {},
       });
       // log for debugging and run support purposes
-      logger.debug('{}UserService::#registerUser::successfully executed');
+      logger.info('{}UserService::#registerUser::successfully executed');
       // return resulst explicitly
       return putUser;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.info(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
@@ -71,7 +72,7 @@ export class UserService {
   public async loginUser(loginUserReqeust: { emailAddress: string; password: string; ipAddress?: string; }): Promise<{ jwt: string | null | AnyObject; }> {
     try {
       // log for debugging and run support purposes
-      logger.debug('{}UserService::#loginUser::initiating execution');
+      logger.info('{}UserService::#loginUser::initiating execution');
       // deconstruct for ease
       const {
         emailAddress,
@@ -100,18 +101,21 @@ export class UserService {
       // create a users roles
       const roles: string[] = [];
       // first based off user tokens
-      roles.push(...existingUserTokens.reduce((userRoles: string[], existingUserToken: UserToken) => {
-        if (
-          existingUserToken.type === UserTokenTypeEnum.TWITTER
-          && existingUserToken.oAuthAccessToken
-          && existingUserToken.oAuthAccessTokenSecret
-        ) {
-          userRoles.push('Twitter User');
-        }
-        return userRoles;
-      }, []));
+      roles.push(
+        STANDARD_USER_ROLE,
+        ...existingUserTokens.reduce((userRoles: string[], existingUserToken: UserToken) => {
+          if (
+            existingUserToken.type === UserTokenTypeEnum.TWITTER
+            && existingUserToken.oAuthAccessToken
+            && existingUserToken.oAuthAccessTokenSecret
+          ) {
+            userRoles.push('Twitter User');
+          }
+          return userRoles;
+        }, []),
+      );
       // log for debugging and run support purposes
-      logger.debug('{}UserService::#loginUser::successfully executed');
+      logger.info('{}UserService::#loginUser::successfully executed');
       // return resulst explicitly
       return {
         jwt: jwt.sign({
@@ -123,7 +127,7 @@ export class UserService {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
+      logger.info(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

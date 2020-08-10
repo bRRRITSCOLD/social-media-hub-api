@@ -17,7 +17,7 @@ const options = {
 
 winston.addColors(options.colors);
 
-const winstonLogger = winston.createLogger({
+const logger = winston.createLogger({
   levels: options.levels,
   transports: [
     new winston.transports.Console({
@@ -36,24 +36,6 @@ const winstonLogger = winston.createLogger({
     }),
   ],
 });
-
-const logger = {
-  error(message: any) {
-    winstonLogger.log('error', message);
-  },
-  warn(message: any) {
-    winstonLogger.log('warn', message);
-  },
-  info(message: any) {
-    winstonLogger.log('info', message);
-  },
-  debug(message: any) {
-    winstonLogger.log('debug', message, (err: any, level: any) => {
-      console.log(err);
-      console.log(level);
-    });
-  },
-};
 
 export {
   logger,

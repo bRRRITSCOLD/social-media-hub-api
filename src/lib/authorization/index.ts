@@ -1,5 +1,7 @@
 import { APIError } from '../../models/error';
 
+export const STANDARD_USER_ROLE = 'Standard User';
+
 export const authorization = {
   roles(userRoles: string[], authorizedRoles: string[]) {
     // map over user roles and determine
@@ -7,7 +9,7 @@ export const authorization = {
     // authorized/appropriate roles
     const authorized: boolean[] = userRoles
       .map((userRole: string) => {
-        if (authorizedRoles.includes('*') || authorizedRoles.includes(userRole)) {
+        if (authorizedRoles.includes(STANDARD_USER_ROLE) || authorizedRoles.includes(userRole)) {
           return true;
         }
         return false;

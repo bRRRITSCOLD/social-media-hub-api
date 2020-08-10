@@ -142,7 +142,7 @@
       "env": {
         "NODE_ENV": "LOCAL",
         "DATACENTER_ENV": "ONPREM"
-      },
+      }
     }
   ]
 }

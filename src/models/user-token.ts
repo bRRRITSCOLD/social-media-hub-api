@@ -33,6 +33,8 @@ export interface UserTokenInterface {
   oAuthAccessToken?: string;
   oAuthAccessTokenSecret?: string;
   oAuthAccessAuhthorizeUrl?: string;
+  twitterScreenName?: string;
+  twitterUserId?: string;
 }
 
 const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
@@ -69,6 +71,14 @@ const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
     .string()
     .label('OAuth Access Auhthoriz Url')
     .optional(),
+  twitterUserId: yup
+    .string()
+    .label('Twitter User ID')
+    .optional(),
+  twitterScreenName: yup
+    .string()
+    .label('Twitter Screen Name')
+    .optional(),
 });
 
 /**
@@ -87,6 +97,8 @@ export class UserToken implements UserTokenInterface {
   public oAuthAccessToken?: string;
   public oAuthAccessTokenSecret?: string;
   public oAuthAccessAuhthorizeUrl?: string;
+  public twitterScreenName?: string;
+  public twitterUserId?: string;
 
   /**
    *Creates an instance of UserToken.
@@ -104,6 +116,8 @@ export class UserToken implements UserTokenInterface {
       oAuthAccessToken: _.get(userToken, 'oAuthAccessToken'),
       oAuthAccessTokenSecret: _.get(userToken, 'oAuthAccessTokenSecret'),
       oAuthAccessAuhthorizeUrl: _.get(userToken, 'oAuthAccessAuhthorizeUrl'),
+      twitterScreenName: _.get(userToken, 'twitterScreenName'),
+      twitterUserId: _.get(userToken, 'twitterUserId'),
     });
   }
 

@@ -8,8 +8,8 @@ export default [
     options: {
       useUnifiedTopology: true,
       poolSize: 20,
-      // authMechanism: 'DEFAULT',
-      // authSource: 'admin',
+      authMechanism: 'DEFAULT',
+      authSource: 'admin',
       auth: {
         user: env.MONGO_SOCIAL_MEDIA_HUB_API_USER,
         password: env.MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD,

@@ -20,6 +20,14 @@ const GQL = require('fastify-gql');
 
 const bootstrap = async () => {
   try {
+    // errors
+    fastifyApp.addHook('onError', async (request, reply, error) => {
+      // Useful for custom error logging
+      // You should not use this hook to update the error
+      console.log(request);
+      console.log(reply);
+      console.log(error);
+    });
     // cors
     fastifyApp.register(require('fastify-cors'), {
       // origin: 'http://127.0.0.1:3000',
@@ -57,6 +65,10 @@ const bootstrap = async () => {
           request,
           response,
         };
+      },
+      errorHandler: (error: any, service: any) => {
+        console.log(error);
+        console.log(service);
       },
     });
     // return app explicitly

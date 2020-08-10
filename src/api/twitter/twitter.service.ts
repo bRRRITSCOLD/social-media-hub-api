@@ -4,10 +4,11 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // libraries
-import { oAuthConnector, OAuth, jwt as jsonwebtoken } from '../../lib/authentication';
+import { oAuthConnector, OAuth } from '../../lib/authentication';
 import { env } from '../../lib/environment';
 import { logger } from '../../lib/logger';
 import { anyy } from '../../lib/utils';
+import * as cryptography from '../../lib/cryptography';
 
 // models
 import { APIError } from '../../models/error';
@@ -22,7 +23,7 @@ export class TwitterService {
   public async getOAuthRequestToken(data: { userId: string; }): Promise<UserToken> {
     try {
       // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthRequestToken::initiating execution');
+      logger.info('{}TwitterService::#getOAuthRequestToken::initiating execution');
       // deconstruct for ease
       const { userId } = data;
       // fetch the user that is requesting
@@ -67,14 +68,14 @@ export class TwitterService {
         oAuthAccessAuhthorizeUrl: `https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokenResponse.oAuthRequestToken}`,
       });
       // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthRequestToken::successfully executed');
+      logger.info('{}TwitterService::#getOAuthRequestToken::successfully executed');
       // return resulst explicitly
       return twitterAccessRequestUserTwitterToken;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
+      logger.info(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
@@ -90,7 +91,7 @@ export class TwitterService {
   ): Promise<boolean> {
     try {
       // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthAccessToken::initiating execution');
+      logger.info('{}TwitterService::#getOAuthAccessToken::initiating execution');
       // deconstruct for ease
       const {
         userId,
@@ -131,9 +132,11 @@ export class TwitterService {
       // get twitter oauth client
       const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
       // wrap call in promise for use in async/await
-      const getOAuthAccessToken = (getOAuthAccessTokenReqeust: { oAuthReqToken: string, oAuthReqTokenSecret: string, oAuthVer: string }): Promise<{
+      const getOAuthAccessToken = (getOAuthAccessTokenReqeust: { oAuthReqToken: string, oAuthReqTokenSecret: string, oAuthVer: string; }): Promise<{
         oAuthAccessToken: string;
         oAuthAccessTokenSecret: string;
+        userId: string;
+        screenName: string;
       }> => new Promise((res: any, rej: any) => {
         // deconstruct for easr
         const {
@@ -147,6 +150,8 @@ export class TwitterService {
           return res({
             oAuthAccessToken,
             oAuthAccessTokenSecret,
+            userId: results.user_id,
+            screenName: results.screen_name,
             ...results,
           });
         });
@@ -165,13 +170,16 @@ export class TwitterService {
           userId: existingUser.userId,
           tokenId: existingUserToken ? existingUserToken.tokenId : uuid(),
           type: UserTokenTypeEnum.TWITTER,
-          oAuthAuthAccessToken: getOAuthAccessTokenResponse.oAuthAccessToken,
-          oAuthAccessTokenSecret: getOAuthAccessTokenResponse.oAuthAccessTokenSecret,
+          oAuthAccessToken: cryptography.encrypt(getOAuthAccessTokenResponse.oAuthAccessToken),
+          oAuthAccessTokenSecret: cryptography.encrypt(getOAuthAccessTokenResponse.oAuthAccessTokenSecret),
+          twitterUserId: getOAuthAccessTokenResponse.userId,
+          twitterScreenName: getOAuthAccessTokenResponse.screenName,
         }, _.isUndefined),
       ));
       // if an existing user token was found then
       // replace it with an updated UserToken
       // instance that has the new access tokens
+      // TODO: Promise.all with putUser to add token id to user's token array
       await userTokenManager.putUserToken({
         userToken: newTwitterAccessUserToken,
         putCriteria: _.omitBy({
@@ -182,14 +190,14 @@ export class TwitterService {
         putOptions: {},
       });
       // log for debugging and run support purposes
-      logger.debug('{}TwitterService::#getOAuthAccessToken::successfully executed');
+      logger.info('{}TwitterService::#getOAuthAccessToken::successfully executed');
       // return resulst explicitly
       return true;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.debug(`{}TwitterService::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+      logger.info(`{}TwitterService::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
