@@ -18,6 +18,28 @@ export const anyy = {
   },
 };
 
+export const booleans = {
+  fromOther(booleanLikeValue: any): boolean {
+    switch (booleanLikeValue) {
+      case '1':
+      case 1:
+      case 'true':
+      case true: {
+        return true;
+      }
+      case '0':
+      case 0:
+      case 'false':
+      case false: {
+        return false;
+      }
+      default: {
+        return undefined as unknown as boolean;
+      }
+    }
+  },
+};
+
 export const enumerations = {
   enumerate(enumm: any) {
     return Object.keys(enumm).map((key: any) => enumm[key]);

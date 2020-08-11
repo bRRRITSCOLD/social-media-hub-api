@@ -23,7 +23,7 @@ let staticUserTokens: Partial<UserToken>[] | Partial<MockUserToken>[];
 let testUserTokens: Partial<UserToken>[] | Partial<MockUserToken>[];
 
 // tests
-describe('data-management/user-token integration tests', () => {
+describe('data-management/user-token.manager integration tests', () => {
   before(async () => {
     try {
       // load env

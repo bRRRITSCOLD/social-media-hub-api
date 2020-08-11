@@ -17,6 +17,7 @@ import { UserToken, UserTokenTypeEnum } from '../../models/user-token';
 // models
 import * as userManager from '../../data-management/user.manager';
 import * as userTokenManager from '../../data-management/user-token.manager';
+import * as twitterManager from '../../data-management/twitter.manager';
 
 @Service()
 export class TwitterService {
@@ -40,32 +41,15 @@ export class TwitterService {
         new Error('No user found.'),
         { statusCode: 404 },
       );
-      // get twitter oauth client
-      const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
-      // wrap call in promise for use in async/await
-      const getOAuthRequestToken = (): Promise<{
-        [key: string]: any;
-        [key: number]: any;
-        oAuthRequestToken: string;
-        oAuthRequestTokenSecret: string;
-      }> => new Promise((res: any, rej: any) => {
-        twitterOAuthClient.getOAuthRequestToken((err: any, oAuthRequestToken: string, oAuthRequestTokenSecret: string, results: any) => {
-          if (err) return rej(err);
-          return res({
-            oAuthRequestToken,
-            oAuthRequestTokenSecret,
-            ...results,
-          });
-        });
-      });
-      // call new wrapped function
-      const getOAuthRequestTokenResponse = await getOAuthRequestToken();
+      // get twitter request tokens and
+      // additional information
+      const getOAuthRequestTokensResponse = await twitterManager.getOAuthRequestToken();
       // store the encrypted and signed values in mongo
       const twitterAccessRequestUserTwitterToken = new UserToken({
         userId,
-        oAuthRequestToken: getOAuthRequestTokenResponse.oAuthRequestToken,
-        oAuthRequestTokenSecret: getOAuthRequestTokenResponse.oAuthRequestTokenSecret,
-        oAuthAccessAuhthorizeUrl: `https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokenResponse.oAuthRequestToken}`,
+        oAuthRequestToken: getOAuthRequestTokensResponse.oAuthRequestToken,
+        oAuthRequestTokenSecret: getOAuthRequestTokensResponse.oAuthRequestTokenSecret,
+        oAuthAccessAuhthorizeUrl: `https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokensResponse.oAuthRequestToken}`,
       });
       // log for debugging and run support purposes
       logger.info('{}TwitterService::#getOAuthRequestToken::successfully executed');
@@ -128,39 +112,12 @@ export class TwitterService {
         new Error('No user found.'),
         { statusCode: 404 },
       );
-      // check that the tokens
-      // get twitter oauth client
-      const twitterOAuthClient: OAuth = oAuthConnector.getClient(env.TWITTER_OAUTH_CLIENT_NAME);
-      // wrap call in promise for use in async/await
-      const getOAuthAccessToken = (getOAuthAccessTokenReqeust: { oAuthReqToken: string, oAuthReqTokenSecret: string, oAuthVer: string; }): Promise<{
-        oAuthAccessToken: string;
-        oAuthAccessTokenSecret: string;
-        userId: string;
-        screenName: string;
-      }> => new Promise((res: any, rej: any) => {
-        // deconstruct for easr
-        const {
-          oAuthReqToken,
-          oAuthReqTokenSecret,
-          oAuthVer,
-        } = getOAuthAccessTokenReqeust;
-        // use twitter client to get tokens
-        twitterOAuthClient.getOAuthAccessToken(oAuthReqToken, oAuthReqTokenSecret, oAuthVer, (err, oAuthAccessToken, oAuthAccessTokenSecret, results) => {
-          if (err) return rej(err);
-          return res({
-            oAuthAccessToken,
-            oAuthAccessTokenSecret,
-            userId: results.user_id,
-            screenName: results.screen_name,
-            ...results,
-          });
-        });
-      });
-      // call new wrapped function
-      const getOAuthAccessTokenResponse = await getOAuthAccessToken({
-        oAuthReqToken: oAuthRequestToken,
-        oAuthReqTokenSecret: oAuthRequestTokenSecret,
-        oAuthVer: oAuthVerifier,
+      // get to get twitter access tokens and
+      // additional information
+      const getOAuthAccessTokenResponse = await twitterManager.getOAuthAccessToken({
+        oAuthRequestToken,
+        oAuthRequestTokenSecret,
+        oAuthVerifier,
       });
       // create the new user token
       const newTwitterAccessUserToken = new UserToken(_.assign(

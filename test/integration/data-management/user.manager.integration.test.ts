@@ -26,7 +26,7 @@ let staticUsers: Partial<User>[] | Partial<MockUser>[];
 let testUsers: Partial<User>[] | Partial<MockUser>[];
 
 // tests
-describe('data-management/user integration tests', () => {
+describe('data-management/user.manager integration tests', () => {
   before(async () => {
     try {
       // load env

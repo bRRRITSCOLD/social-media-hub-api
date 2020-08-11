@@ -137,6 +137,61 @@ export class TwitterResolver {
       throw error;
     }
   }
+
+  // TODO: put this in twitter.resolver.ts
+  // TODO: add test in twitter.resolver.e2e.test.ts
+  // public async getUserTimeline() {
+  //   try {
+  //     const response = await client.get('statuses/user_timeline', {
+  //       screen_name: 'twitterapi',
+  //       count: 2,
+  //     });
+  //   } catch (err) {
+  //     // build error
+  //     const error = new APIError(err);
+  //     // log for debugging and run support purposes
+  //     logger.info(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
+  //     // throw error explicitly
+  //     throw error;
+  //   }
+  // }
+
+  // TODO: put this in twitter.resolver.ts
+  // TODO: add test in twitter.resolver.e2e.test.ts
+  // public async getHomeTimeline() {
+  //   try {
+  //     const response = await client.get('statuses/user_timeline', {
+  //       screen_name: 'twitterapi',
+  //       count: 2,
+  //     });
+  //   } catch (err) {
+  //     // build error
+  //     const error = new APIError(err);
+  //     // log for debugging and run support purposes
+  //     logger.info(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
+  //     // throw error explicitly
+  //     throw error;
+  //   }
+  // }
+
+  // TODO: put this in twitter.resolver.ts
+  // TODO: add test in twitter.resolver.e2e.test.ts
+  // public async getMentionTimeline() {
+  //   try {
+  //     const response = await client.get('statuses/user_timeline', {
+  //       screen_name: 'twitterapi',
+  //       count: 2,
+  //     });
+  //   } catch (err) {
+  //     // build error
+  //     const error = new APIError(err);
+  //     // log for debugging and run support purposes
+  //     logger.info(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
+  //     // throw error explicitly
+  //     throw error;
+  //   }
+  // }
+
   // @FieldResolver()
   // public async teams(@Root() match: Match) {
   //   try {
