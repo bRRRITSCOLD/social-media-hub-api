@@ -1,5 +1,6 @@
 // node_modules
 import * as _ from 'lodash';
+import Twitter from 'twitter-lite';
 
 // libraries
 import { OAuth, oAuthConnector } from '../lib/authentication';
@@ -144,6 +145,58 @@ export async function getOAuthAccessToken(getOAuthAccessTokenRequest: GetOAuthAc
       oAuthAccessTokenSecret: _.get(getOAuthAccessTokenResponse, 'oAuthAccessTokenSecret'),
       userId: _.get(getOAuthAccessTokenResponse, 'userId'),
       screenName: _.get(getOAuthAccessTokenResponse, 'screenName'),
+    };
+  } catch (err) {
+    // build error
+    const error = new APIError(err);
+    // log for debugging and run support purposes
+    logger.info(`{}TwitterManager::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+    // throw error explicitly
+    throw error;
+  }
+}
+
+export interface GetUserTimelineRequestInterface {
+  oAuthAccessToken: string;
+  oAuthAccessTokenSecret: string;
+  userId?: string;
+  screenName?: string;
+  sinceId?: string;
+  count?: string;
+  maxId?: string;
+  trimUser?: string;
+  excludeReplies?: string;
+  includeRts?: string;
+}
+
+export interface GetUserTimelineResponseInterface {
+  tweets: any[]
+  moreTweets: boolean;
+}
+
+export async function getUserTimeline(getUserTimelineRequest: GetUserTimelineRequestInterface): Promise<GetUserTimelineResponseInterface> {
+  try {
+    // deconstruct for ease
+    const {
+      oAuthAccessToken,
+      oAuthAccessTokenSecret,
+    } = getUserTimelineRequest;
+    // create new twitter client
+    const twitterClient = new Twitter({
+      consumer_key: env.TIWTTER_CONSUMER_KEY, // from Twitter.
+      consumer_secret: env.TIWTTER_CONSUMER_SECRET, // from Twitter.
+      access_token_key: oAuthAccessToken, // from your User (oauth_token)
+      access_token_secret: oAuthAccessTokenSecret, // from your User (oauth_token_secret)
+    });
+    // call to get a users personal timeline
+    const tweets = await twitterClient.get('statuses/user_timeline');
+    // console.log(`Rate: ${tweets._headers.get('x-rate-limit-remaining')} / ${tweets._headers.get('x-rate-limit-limit')}`);
+    // const delta = (tweets._headers.get('x-rate-limit-reset') * 1000) - Date.now();
+    // console.log(`Reset: ${Math.ceil(delta / 1000 / 60)} minutes`);
+    // return explcitly
+    return {
+      tweets,
+      moreTweets: true,
     };
   } catch (err) {
     // build error

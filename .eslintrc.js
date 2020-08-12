@@ -53,7 +53,9 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': [0],
     '@typescript-eslint/no-explicit-any': [0],
     '@typescript-eslint/no-unused-expressions': [0],
-    'implicit-arrow-linebreak': [0]
+    'implicit-arrow-linebreak': [0],
+    'no-return-await': [0],
+    'no-underscore-dangle': [0],
   },
   settings: {
     react: {

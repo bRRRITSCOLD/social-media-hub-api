@@ -112,6 +112,11 @@ export class TwitterService {
         new Error('No user found.'),
         { statusCode: 404 },
       );
+      // if no existing twitter user token
+      if (!existingUserToken) throw new APIError(
+        new Error('No twitter user token found.'),
+        { statusCode: 404 },
+      );
       // get to get twitter access tokens and
       // additional information
       const getOAuthAccessTokenResponse = await twitterManager.getOAuthAccessToken({
@@ -155,6 +160,72 @@ export class TwitterService {
       const error = new APIError(err);
       // log for debugging and run support purposes
       logger.info(`{}TwitterService::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+      // throw error explicitly
+      throw error;
+    }
+  }
+
+  public async getUserTimeline(
+    data: {
+      userId: string;
+    },
+  ): Promise<any> {
+    try {
+      // log for debugging and run support purposes
+      logger.info('{}TwitterService::#getUserTimeline::initiating execution');
+      // deconstruct for ease
+      const {
+        userId,
+      } = data;
+      // query for the user that is attempting to
+      // get the oauth request token for twitter
+      const [
+        { users: [existingUser] },
+        { userTokens: [existingUserToken] },
+      ] = await Promise.all([
+        userManager.searchUsers({
+          searchCriteria: { userId },
+          searchOptions: {
+            pageNumber: 1,
+            pageSize: Number.MAX_SAFE_INTEGER,
+          },
+        }),
+        userTokenManager.searchUserTokens({
+          searchCriteria: {
+            userId,
+            type: UserTokenTypeEnum.TWITTER,
+          },
+          searchOptions: {
+            pageNumber: 1,
+            pageSize: Number.MAX_SAFE_INTEGER,
+          },
+        }),
+      ]);
+      // if no user throw error
+      if (!existingUser) throw new APIError(
+        new Error('No user found.'),
+        { statusCode: 404 },
+      );
+      // if no existing twitter user token
+      if (!existingUserToken) throw new APIError(
+        new Error('No twitter user token found.'),
+        { statusCode: 404 },
+      );
+      // get to get twitter access tokens and
+      // additional information
+      const getUserTimelineResponse = await twitterManager.getUserTimeline({
+        oAuthAccessToken: _.get(existingUserToken, 'oAuthAccessToken', ''),
+        oAuthAccessTokenSecret: _.get(existingUserToken, 'oAuthAccessTokenSecret', ''),
+      });
+      // log for debugging and run support purposes
+      logger.info('{}TwitterService::#getUserTimeline::successfully executed');
+      // return resulst explicitly
+      return getUserTimelineResponse;
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.info(`{}TwitterService::#getUserTimeline::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

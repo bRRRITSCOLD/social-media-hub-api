@@ -73,7 +73,7 @@
     "oauth": "^0.9.15",
     "reflect-metadata": "^0.1.13",
     "signal-exit": "^3.0.3",
-    "twit": "^2.2.11",
+    "twitter-lite": "^0.14.0",
     "type-graphql": "^1.0.0-rc.3",
     "typedi": "^0.8.0",
     "uuid": "^8.3.0",
