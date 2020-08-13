@@ -54,31 +54,38 @@ const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
   oAuthRequestToken: yup
     .string()
     .label('OAuth Request Token')
-    .optional(),
+    .optional()
+    .nullable(),
   oAuthRequestTokenSecret: yup
     .string()
     .label('OAuth Request Token Secret')
-    .optional(),
+    .optional()
+    .nullable(),
   oAuthAccessToken: yup
     .string()
     .label('OAuth Access Token')
-    .optional(),
+    .optional()
+    .nullable(),
   oAuthAccessTokenSecret: yup
     .string()
     .label('OAuth Access Token Secret')
-    .optional(),
+    .optional()
+    .nullable(),
   oAuthAccessAuhthorizeUrl: yup
     .string()
     .label('OAuth Access Auhthoriz Url')
-    .optional(),
+    .optional()
+    .nullable(),
   twitterUserId: yup
     .string()
     .label('Twitter User ID')
-    .optional(),
+    .optional()
+    .nullable(),
   twitterScreenName: yup
     .string()
     .label('Twitter Screen Name')
-    .optional(),
+    .optional()
+    .nullable(),
 });
 
 /**
