@@ -56,6 +56,7 @@ module.exports = {
     'implicit-arrow-linebreak': [0],
     'no-return-await': [0],
     'no-underscore-dangle': [0],
+    'no-useless-return': [0],
   },
   settings: {
     react: {

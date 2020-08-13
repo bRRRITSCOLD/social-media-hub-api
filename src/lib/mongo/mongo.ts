@@ -4,6 +4,9 @@ import {
   ClientSession as MongoClientSession, Db as MongoDb, MongoClient, MongoClientOptions, MongoError,
 } from 'mongodb';
 import { inspect } from 'util';
+import { APIError } from '../../models/error';
+import { logger } from '../logger';
+import { anyy } from '../utils';
 
 /**
  * This is a basic wrapper function
@@ -413,19 +416,27 @@ export class Mongo implements MongoInterface {
           // try catch incase it is undefined by now
           try {
             (oldMongoDatasource.client as MongoClient).close().catch((err: unknown) => {
-              // log error for the end user
-              console.log(`Error shutting down mongo connection ${connectionName}. Error = ${JSON.stringify(inspect(err, true))}`);
+              // build error
+              const error = new APIError(err);
+              // log for debugging and run support purposes
+              logger.error(`{}App::#verifyConnection#::error closing mongo connection ${connectionName}::error=${anyy.stringify(error)}`);
               // return explicitly
             });
           } catch (e) {
-            // possibly log
+            // build error
+            const error = new APIError(e);
+            // log for debugging and run support purposes
+            logger.error(`{}App::#verifyConnection#::error attempting to close mongo connection ${connectionName}::error=${anyy.stringify(error)}`);
           }
         }
       }
       // return explicitly
       return;
     } catch (err) {
-      // throw explicitly
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.error(`{}App::#verifyConnection#::error executing::error=${anyy.stringify(error)}`);
       throw err;
     }
   }
@@ -498,11 +509,15 @@ export class Mongo implements MongoInterface {
             // execute the close() method on the connection's internal mongo client
             connectionShutdownTasks.push(
               (this.datasources[chunkedConnectionNames[i][j]][k].client as MongoClient).close().catch((err: unknown) => {
-                // log error for the end user
-                console.log(
-                  `Error shutting down mongo connection ${chunkedConnectionNames[i][j]}. Error = ${JSON.stringify(inspect(err, true))}`,
-                );
-                // return explicitly
+                // build error
+                const error = new APIError(err);
+                // log for debugging and run support purposes
+                logger.error(`{}App::#shutdown#::error shutting down mongo connection ${this.datasources[chunkedConnectionNames[i][j]][k].config?.name}::error=${anyy.stringify(error)}`);
+                // return explicitly - we do this
+                // because we do not want to interrupt
+                // any other shutdown flows going on
+                // as this is usually used in a shutdown process
+                return;
               }),
             );
           }

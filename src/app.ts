@@ -11,6 +11,8 @@ import { APIError } from './models/error';
 
 // middleware
 import { ErrorInterceptor } from './lib/middleware/error';
+import { logger } from './lib/logger';
+import { anyy } from './lib/utils';
 
 // app
 const fastifyApp = fastify({ logger: true });
@@ -21,12 +23,11 @@ const GQL = require('fastify-gql');
 const bootstrap = async () => {
   try {
     // errors
-    fastifyApp.addHook('onError', async (request, reply, error) => {
-      // Useful for custom error logging
-      // You should not use this hook to update the error
-      console.log(request);
-      console.log(reply);
-      console.log(error);
+    fastifyApp.addHook('onError', async (_request, _reply, err) => {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.error(`{}App::#onError::error=${anyy.stringify(error)}`);
     });
     // cors
     fastifyApp.register(require('fastify-cors'), {
@@ -66,9 +67,11 @@ const bootstrap = async () => {
           response,
         };
       },
-      errorHandler: (error: any, service: any) => {
-        console.log(error);
-        console.log(service);
+      errorHandler: (err: any, _service: any) => {
+        // build error
+        const error = new APIError(err);
+        // log for debugging and run support purposes
+        logger.error(`{}App::graphql::#errorHandler::error=${anyy.stringify(error)}`);
       },
     });
     // return app explicitly
@@ -76,7 +79,9 @@ const bootstrap = async () => {
   } catch (err) {
     // build error
     const error = new APIError(err);
-    // throw and errors
+    // log for debugging and run support purposes
+    logger.error(`{}App::#bootstrap::error executing::error=${anyy.stringify(error)}`);
+    // throw any error
     throw error;
   }
 };
