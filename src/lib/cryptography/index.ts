@@ -8,60 +8,7 @@ import { promisify } from 'util';
 import { env } from '../environment';
 
 // file constants
-
-const ALGORITHM = {
-
-  /**
-     * GCM is an authenticated encryption mode that
-     * not only provides confidentiality but also
-     * provides integrity in a secured way
-     * */
-  BLOCK_CIPHER: 'aes-256-gcm',
-
-  /**
-     * 128 bit auth tag is recommended for GCM
-     */
-  AUTH_TAG_BYTE_LEN: 16,
-
-  /**
-     * NIST recommends 96 bits or 12 bytes IV for GCM
-     * to promote interoperability, efficiency, and
-     * simplicity of design
-     */
-  IV_BYTE_LEN: 12,
-
-  /**
-     * Note: 256 (in algorithm name) is key size.
-     * Block size for AES is always 128
-     */
-  KEY_BYTE_LEN: 32,
-
-  /**
-     * To prevent rainbow table attacks
-     * */
-  SALT_BYTE_LEN: 16,
-};
-
-export const getIV = () => crypto.randomBytes(ALGORITHM.IV_BYTE_LEN);
-export const getRandomKey = () => crypto.randomBytes(ALGORITHM.KEY_BYTE_LEN);
-
-/**
- * To prevent rainbow table attacks
- * */
-export const getSalt = () => crypto.randomBytes(ALGORITHM.SALT_BYTE_LEN);
-
-/**
- *
- * @param {Buffer} password - The password to be used for generating key
- *
- * To be used when key needs to be generated based on password.
- * The caller of this function has the responsibility to clear
- * the Buffer after the key generation to prevent the password
- * from lingering in the memory
- */
-export const getKeyFromPassword = (password: string, salt: string) => {
-  return crypto.scryptSync(password, salt, ALGORITHM.KEY_BYTE_LEN);
-};
+const algorithm = 'aes-256-cbc';
 
 /**
  * Sign the given `val` with `secret`.
@@ -103,40 +50,27 @@ export function unsign(val: any, secret: string) {
   return crypto.timingSafeEqual(macBuffer, valBuffer) ? str : false;
 }
 
-/**
- *
- *
- * @param {string} text
- * @returns
- */
 export function encrypt(text: string) {
-  const iv = getIV();
-  const cipher = (crypto as any).createCipheriv(
-    ALGORITHM.BLOCK_CIPHER, Buffer.from(env.CRYPTOGRAPHY_KEY, 'base64'), iv, { authTagLength: ALGORITHM.AUTH_TAG_BYTE_LEN },
-  );
-  let encryptedMessage = cipher.update(text);
-  encryptedMessage = Buffer.concat([encryptedMessage, cipher.final()]);
-  return `${iv.toString('base64')}:${encryptedMessage.toString('base64')}}`;
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(env.CRYPTOGRAPHY_KEY, 'base64'), iv);
+  let encrypted: any = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  encrypted = `${iv.toString('hex')}:::${encrypted.toString('hex')}`;
+  return encrypted;
 }
 
-/**
- *
- *
- * @param {string} text
- * @returns
- */
 export function decrypt(text: string) {
-  const authTag = text.slice(-16);
-  const iv = text.slice(0, 12);
-  const encryptedMessage = text.slice(12, -16);
-  const decipher = (crypto as any).createDecipheriv(
-    ALGORITHM.BLOCK_CIPHER, env.CRYPTOGRAPHY_KEY, iv, { authTagLength: ALGORITHM.AUTH_TAG_BYTE_LEN },
-  );
-  decipher.setAuthTag(authTag);
-  let messagetext = decipher.update(encryptedMessage);
-  messagetext = Buffer.concat([messagetext, decipher.final()]);
-  messagetext = messagetext.toString();
-  return messagetext;
+  const [
+    iv,
+    encrypted,
+  ] = text.split(':::');
+  const ivBuffer = Buffer.from(iv, 'hex');
+  const encryptedText = Buffer.from(encrypted, 'hex');
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(env.CRYPTOGRAPHY_KEY, 'base64'), ivBuffer);
+  let decrypted: any = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  decrypted = decrypted.toString();
+  return decrypted;
 }
 
 export const password = bcrypt;

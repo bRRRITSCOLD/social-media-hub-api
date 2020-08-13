@@ -1,3 +1,4 @@
+/* eslint-disable no-script-url */
 const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const eslint = require('gulp-eslint');
@@ -14,12 +15,12 @@ gulp.task('typescript:compile', () => {
 
 gulp.task('typescript:eslint', () => {
   return gulp.src(['src/*.ts', 'dist/**/*.ts'])
-      .pipe(eslint({
-        quiet: false,
-        configFile: '.eslintrc.js'
-      }))
-      .pipe(eslint.format())
-      .pipe(eslint.failAfterError());
+    .pipe(eslint({
+      quiet: false,
+      configFile: '.eslintrc.js',
+    }))
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 });
 
 gulp.task('javascript:prettier', () => {
@@ -30,12 +31,12 @@ gulp.task('javascript:prettier', () => {
 
 gulp.task('javascript:eslint', () => {
   return gulp.src(['dist/*.js', 'dist/**/*.js'])
-      .pipe(eslint({
-        quiet: false,
-        configFile: '.eslintrc.js'
-      }))
-      .pipe(eslint.format())
-      .pipe(eslint.failAfterError());
+    .pipe(eslint({
+      quiet: false,
+      configFile: '.eslintrc.js',
+    }))
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 });
 
 gulp.task('default', gulp.series(

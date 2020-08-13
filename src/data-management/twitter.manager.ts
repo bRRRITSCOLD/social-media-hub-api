@@ -162,24 +162,27 @@ export interface GetUserTimelineRequestInterface {
   userId?: string;
   screenName?: string;
   sinceId?: string;
-  count?: string;
   maxId?: string;
+  count?: number;
   trimUser?: string;
   excludeReplies?: string;
   includeRts?: string;
 }
 
-export interface GetUserTimelineResponseInterface {
-  tweets: any[]
-  moreTweets: boolean;
-}
-
-export async function getUserTimeline(getUserTimelineRequest: GetUserTimelineRequestInterface): Promise<GetUserTimelineResponseInterface> {
+export async function getUserTimeline(getUserTimelineRequest: GetUserTimelineRequestInterface): Promise<any[]> {
   try {
     // deconstruct for ease
     const {
       oAuthAccessToken,
       oAuthAccessTokenSecret,
+      userId,
+      screenName,
+      sinceId,
+      maxId,
+      count,
+      trimUser,
+      excludeReplies,
+      includeRts,
     } = getUserTimelineRequest;
     // create new twitter client
     const twitterClient = new Twitter({
@@ -189,20 +192,148 @@ export async function getUserTimeline(getUserTimelineRequest: GetUserTimelineReq
       access_token_secret: oAuthAccessTokenSecret, // from your User (oauth_token_secret)
     });
     // call to get a users personal timeline
-    const tweets = await twitterClient.get('statuses/user_timeline');
+    const tweets = await twitterClient.get('statuses/user_timeline', _.omitBy({
+      user_id: userId,
+      screen_name: screenName,
+      since_id: sinceId,
+      max_id: maxId,
+      count,
+      trim_user: trimUser,
+      exclude_replies: excludeReplies,
+      include_rts: includeRts,
+    }, _.isUndefined));
     // console.log(`Rate: ${tweets._headers.get('x-rate-limit-remaining')} / ${tweets._headers.get('x-rate-limit-limit')}`);
     // const delta = (tweets._headers.get('x-rate-limit-reset') * 1000) - Date.now();
     // console.log(`Reset: ${Math.ceil(delta / 1000 / 60)} minutes`);
     // return explcitly
-    return {
-      tweets,
-      moreTweets: true,
-    };
+    return tweets;
   } catch (err) {
     // build error
     const error = new APIError(err);
     // log for debugging and run support purposes
-    logger.info(`{}TwitterManager::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+    logger.info(`{}TwitterManager::#getUserTimeline::error executing::error=${anyy.stringify(error)}`);
+    // throw error explicitly
+    throw error;
+  }
+}
+
+export interface GetHomeTimelineRequestInterface {
+  oAuthAccessToken: string;
+  oAuthAccessTokenSecret: string;
+  userId?: string;
+  screenName?: string;
+  sinceId?: string;
+  maxId?: string;
+  count?: number;
+  trimUser?: string;
+  excludeReplies?: string;
+  includeRts?: string;
+}
+
+export async function getHomeTimeline(getHomeTimelineRequest: GetHomeTimelineRequestInterface): Promise<any[]> {
+  try {
+    // deconstruct for ease
+    const {
+      oAuthAccessToken,
+      oAuthAccessTokenSecret,
+      userId,
+      screenName,
+      sinceId,
+      maxId,
+      count,
+      trimUser,
+      excludeReplies,
+      includeRts,
+    } = getHomeTimelineRequest;
+    // create new twitter client
+    const twitterClient = new Twitter({
+      consumer_key: env.TIWTTER_CONSUMER_KEY, // from Twitter.
+      consumer_secret: env.TIWTTER_CONSUMER_SECRET, // from Twitter.
+      access_token_key: oAuthAccessToken, // from your User (oauth_token)
+      access_token_secret: oAuthAccessTokenSecret, // from your User (oauth_token_secret)
+    });
+    // call to get a users personal timeline
+    const tweets = await twitterClient.get('statuses/home_timeline', _.omitBy({
+      user_id: userId,
+      screen_name: screenName,
+      since_id: sinceId,
+      max_id: maxId,
+      count,
+      trim_user: trimUser,
+      exclude_replies: excludeReplies,
+      include_rts: includeRts,
+    }, _.isUndefined));
+    // console.log(`Rate: ${tweets._headers.get('x-rate-limit-remaining')} / ${tweets._headers.get('x-rate-limit-limit')}`);
+    // const delta = (tweets._headers.get('x-rate-limit-reset') * 1000) - Date.now();
+    // console.log(`Reset: ${Math.ceil(delta / 1000 / 60)} minutes`);
+    // return explcitly
+    return tweets;
+  } catch (err) {
+    // build error
+    const error = new APIError(err);
+    // log for debugging and run support purposes
+    logger.info(`{}TwitterManager::#getHomeTimeline::error executing::error=${anyy.stringify(error)}`);
+    // throw error explicitly
+    throw error;
+  }
+}
+
+export interface GetMentionsTimelineRequestInterface {
+  oAuthAccessToken: string;
+  oAuthAccessTokenSecret: string;
+  userId?: string;
+  screenName?: string;
+  sinceId?: string;
+  maxId?: string;
+  count?: number;
+  trimUser?: string;
+  excludeReplies?: string;
+  includeRts?: string;
+}
+
+export async function getMentionsTimeline(getMentionsTimelineRequest: GetMentionsTimelineRequestInterface): Promise<any[]> {
+  try {
+    // deconstruct for ease
+    const {
+      oAuthAccessToken,
+      oAuthAccessTokenSecret,
+      userId,
+      screenName,
+      sinceId,
+      maxId,
+      count,
+      trimUser,
+      excludeReplies,
+      includeRts,
+    } = getMentionsTimelineRequest;
+    // create new twitter client
+    const twitterClient = new Twitter({
+      consumer_key: env.TIWTTER_CONSUMER_KEY, // from Twitter.
+      consumer_secret: env.TIWTTER_CONSUMER_SECRET, // from Twitter.
+      access_token_key: oAuthAccessToken, // from your User (oauth_token)
+      access_token_secret: oAuthAccessTokenSecret, // from your User (oauth_token_secret)
+    });
+    // call to get a users personal timeline
+    const tweets = await twitterClient.get('statuses/mentions_timeline', _.omitBy({
+      user_id: userId,
+      screen_name: screenName,
+      since_id: sinceId,
+      max_id: maxId,
+      count,
+      trim_user: trimUser,
+      exclude_replies: excludeReplies,
+      include_rts: includeRts,
+    }, _.isUndefined));
+    // console.log(`Rate: ${tweets._headers.get('x-rate-limit-remaining')} / ${tweets._headers.get('x-rate-limit-limit')}`);
+    // const delta = (tweets._headers.get('x-rate-limit-reset') * 1000) - Date.now();
+    // console.log(`Reset: ${Math.ceil(delta / 1000 / 60)} minutes`);
+    // return explcitly
+    return tweets;
+  } catch (err) {
+    // build error
+    const error = new APIError(err);
+    // log for debugging and run support purposes
+    logger.info(`{}TwitterManager::#getMentionsTimeline::error executing::error=${anyy.stringify(error)}`);
     // throw error explicitly
     throw error;
   }

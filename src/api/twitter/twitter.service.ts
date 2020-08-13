@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // libraries
+import { promises } from 'fs-extra';
 import { oAuthConnector, OAuth } from '../../lib/authentication';
 import { env } from '../../lib/environment';
 import { logger } from '../../lib/logger';
@@ -29,13 +30,25 @@ export class TwitterService {
       const { userId } = data;
       // fetch the user that is requesting
       // twitter access
-      const { users: [existingUser] } = await userManager.searchUsers({
-        searchCriteria: { userId },
-        searchOptions: {
-          pageNumber: 1,
-          pageSize: Number.MAX_SAFE_INTEGER,
-        },
-      });
+      const [
+        { users: [existingUser] },
+        { userTokens: [existingUserToken] },
+      ] = await Promise.all([
+        userManager.searchUsers({
+          searchCriteria: { userId },
+          searchOptions: {
+            pageNumber: 1,
+            pageSize: Number.MAX_SAFE_INTEGER,
+          },
+        }),
+        userTokenManager.searchUserTokens({
+          searchCriteria: { userId, type: UserTokenTypeEnum.TWITTER },
+          searchOptions: {
+            pageNumber: 1,
+            pageSize: Number.MAX_SAFE_INTEGER,
+          },
+        }),
+      ]);
       // if no user throw error
       if (!existingUser) throw new APIError(
         new Error('No user found.'),
@@ -45,12 +58,45 @@ export class TwitterService {
       // additional information
       const getOAuthRequestTokensResponse = await twitterManager.getOAuthRequestToken();
       // store the encrypted and signed values in mongo
-      const twitterAccessRequestUserTwitterToken = new UserToken({
-        userId,
-        oAuthRequestToken: getOAuthRequestTokensResponse.oAuthRequestToken,
-        oAuthRequestTokenSecret: getOAuthRequestTokensResponse.oAuthRequestTokenSecret,
-        oAuthAccessAuhthorizeUrl: `https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokensResponse.oAuthRequestToken}`,
-      });
+      const twitterAccessRequestUserTwitterToken = new UserToken(_.assign(
+        {},
+        existingUserToken || {},
+        _.omitBy({
+          userId: existingUser.userId,
+          oAuthRequestToken: getOAuthRequestTokensResponse.oAuthRequestToken,
+          oAuthRequestTokenSecret: getOAuthRequestTokensResponse.oAuthRequestTokenSecret,
+          oAuthAccessAuhthorizeUrl: `https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokensResponse.oAuthRequestToken}`,
+        }, _.isUndefined),
+      ));
+      // insert an encrypted version of the request token into mongo
+      await Promise.all([
+        userTokenManager.putUserToken({
+          userToken: _.assign(
+            {},
+            twitterAccessRequestUserTwitterToken,
+            {
+              oAuthRequestToken: cryptography.encrypt(getOAuthRequestTokensResponse.oAuthRequestToken),
+              oAuthRequestTokenSecret: cryptography.encrypt(getOAuthRequestTokensResponse.oAuthRequestTokenSecret),
+              oAuthAccessAuhthorizeUrl: cryptography.encrypt(`https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokensResponse.oAuthRequestToken}`),
+            },
+          ),
+          putCriteria: _.omitBy({
+            userId: twitterAccessRequestUserTwitterToken.userId,
+            tokenId: twitterAccessRequestUserTwitterToken.tokenId,
+            type: twitterAccessRequestUserTwitterToken.type,
+          }, _.isUndefined),
+          putOptions: {},
+        }),
+        userManager.putUser({
+          user: _.assign(
+            {},
+            existingUser,
+            { tokens: [..._.get(existingUser, 'tokens', []), twitterAccessRequestUserTwitterToken.tokenId] },
+          ),
+          putCriteria: {},
+          putOptions: {},
+        }),
+      ]);
       // log for debugging and run support purposes
       logger.info('{}TwitterService::#getOAuthRequestToken::successfully executed');
       // return resulst explicitly
@@ -98,7 +144,7 @@ export class TwitterService {
         }),
         userTokenManager.searchUserTokens({
           searchCriteria: {
-            emailAddress: { userId },
+            userId,
             type: UserTokenTypeEnum.TWITTER,
           },
           searchOptions: {
@@ -110,11 +156,6 @@ export class TwitterService {
       // if no user throw error
       if (!existingUser) throw new APIError(
         new Error('No user found.'),
-        { statusCode: 404 },
-      );
-      // if no existing twitter user token
-      if (!existingUserToken) throw new APIError(
-        new Error('No twitter user token found.'),
         { statusCode: 404 },
       );
       // get to get twitter access tokens and
@@ -142,15 +183,26 @@ export class TwitterService {
       // replace it with an updated UserToken
       // instance that has the new access tokens
       // TODO: Promise.all with putUser to add token id to user's token array
-      await userTokenManager.putUserToken({
-        userToken: newTwitterAccessUserToken,
-        putCriteria: _.omitBy({
-          userId: newTwitterAccessUserToken.userId,
-          tokenId: newTwitterAccessUserToken.tokenId,
-          type: UserTokenTypeEnum.TWITTER,
-        }, _.isUndefined),
-        putOptions: {},
-      });
+      await Promise.all([
+        userTokenManager.putUserToken({
+          userToken: newTwitterAccessUserToken,
+          putCriteria: _.omitBy({
+            userId: newTwitterAccessUserToken.userId,
+            tokenId: newTwitterAccessUserToken.tokenId,
+            type: newTwitterAccessUserToken.type,
+          }, _.isUndefined),
+          putOptions: {},
+        }),
+        userManager.putUser({
+          user: _.assign(
+            {},
+            existingUser,
+            { tokens: [..._.get(existingUser, 'tokens', []), newTwitterAccessUserToken.tokenId] },
+          ),
+          putCriteria: {},
+          putOptions: {},
+        }),
+      ]);
       // log for debugging and run support purposes
       logger.info('{}TwitterService::#getOAuthAccessToken::successfully executed');
       // return resulst explicitly

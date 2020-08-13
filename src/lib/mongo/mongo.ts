@@ -421,12 +421,15 @@ export class Mongo implements MongoInterface {
               // log for debugging and run support purposes
               logger.error(`{}App::#verifyConnection#::error closing mongo connection ${connectionName}::error=${anyy.stringify(error)}`);
               // return explicitly
+              return;
             });
           } catch (e) {
             // build error
             const error = new APIError(e);
             // log for debugging and run support purposes
             logger.error(`{}App::#verifyConnection#::error attempting to close mongo connection ${connectionName}::error=${anyy.stringify(error)}`);
+            // return explicitly
+            return;
           }
         }
       }
@@ -437,6 +440,7 @@ export class Mongo implements MongoInterface {
       const error = new APIError(err);
       // log for debugging and run support purposes
       logger.error(`{}App::#verifyConnection#::error executing::error=${anyy.stringify(error)}`);
+      // throw explicitly
       throw err;
     }
   }
