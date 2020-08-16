@@ -1,7 +1,7 @@
 // node modules
 // import { Resolver, Query, FieldResolver, Root, Args } from 'type-graphql';
 import {
-  Resolver, Mutation, Arg, FieldResolver, Root,
+  Resolver, Mutation, Arg, Ctx,
 } from 'type-graphql';
 import * as _ from 'lodash';
 import { Service } from 'typedi';
@@ -13,21 +13,23 @@ import { APIError } from '../../models/error';
 // libraries
 import { logger } from '../../lib/logger';
 import { anyy } from '../../lib/utils';
-
-// decorators
-// import { ScopeAuthorization, JWTAuthorization } from '../../decorators/security';
+import { JWTAuthorization, ScopeAuthorization } from '../../lib/decorators';
+import * as authentication from '../../lib/authentication';
 
 // graphql type
 import {
-  RegisterUserInputType, UserType, UserCredentialsType, LoginUserInputType,
+  RegisterUserInputType, UserType, UserCredentialsType, LoginUserInputType, RefreshUserJWTInputType,
 } from './user.types';
 
 // services
 import { UserService } from './user.service';
+import { AnyObject } from '../../models/any';
+
+class UserAccess {}
 
 @Service({ transient: true })
-@Resolver((_of: unknown) => UserType)
-export class UserResolver {
+@Resolver((_of: unknown) => UserAccess)
+export class UserAccessResolver {
   public constructor(private readonly userService: UserService) {}
 
   @Mutation((_returns: unknown) => UserType)
@@ -64,6 +66,7 @@ export class UserResolver {
       // return the authorization link
       return {
         jwt: userCrendtials.jwt as string,
+        jwtRefreshToken: userCrendtials.jwtRefreshToken,
       };
     } catch (err) {
       // build error
@@ -75,20 +78,36 @@ export class UserResolver {
     }
   }
 
-  // @FieldResolver()
-  // public async tokens(@Root() _user: UserType): Promise<UserToken> {
-  //   try {
-  //     // @ts-ignore
-  //     // const tms: Teams = await this.teamService.fetchSome(_.get(match, 'teams', []).map((team: any) => team.id));
-  //     // return iterate(tms.TEAMS)
-  //     //   .filter((team: Team) => team.id !== null && team.id !== undefined)
-  //     //   .map((team: Team) => {
-  //     //     return { ...team };
-  //     //   })
-  //     //   .toArray();
-  //     return [];
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+  @JWTAuthorization()
+  @ScopeAuthorization(['*'])
+  @Mutation((_returns: unknown) => UserCredentialsType)
+  public async refreshUserJWT(@Ctx() context: any, @Arg('data') refreshUserJWTInputType: RefreshUserJWTInputType): Promise<UserCredentialsType> {
+    try {
+      // get params from reqeust for ease
+      const [
+        { userId },
+        { jwtRefreshToken },
+      ] = [
+        authentication.jwt.decode(context.request.headers.authorization) as AnyObject,
+        refreshUserJWTInputType,
+      ];
+      // call service
+      const userCrendtials = await this.userService.refreshUserJWT({
+        userId: userId as string,
+        jwtRefreshToken,
+      });
+      // return the authorization link
+      return {
+        jwt: userCrendtials.jwt as string,
+        jwtRefreshToken: userCrendtials.jwtRefreshToken,
+      };
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.error(`{}UserService::#refreshUserJWT::error executing::error=${anyy.stringify(error)}`);
+      // throw error explicitly
+      throw { errors: [error] };
+    }
+  }
 }

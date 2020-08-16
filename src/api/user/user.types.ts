@@ -63,8 +63,17 @@ export class LoginUserInputType {
   ipAddress?: string;
 }
 
+@InputType()
+export class RefreshUserJWTInputType {
+  @Field((_type: unknown) => String)
+  jwtRefreshToken: string;
+}
+
 @ObjectType()
 export class UserCredentialsType {
   @Field((_type: unknown) => String)
   jwt: string;
+
+  @Field((_type: unknown) => String)
+  jwtRefreshToken: string;
 }

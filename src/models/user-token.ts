@@ -15,6 +15,7 @@ import { enumerations } from '../lib/utils';
  */
 export enum UserTokenTypeEnum {
   TWITTER = 'TWITTER',
+  JWT_REFRESH = 'JWT_REFRESH',
   NA = 'NA',
 }
 
@@ -28,6 +29,7 @@ export interface UserTokenInterface {
   tokenId: string;
   userId: string;
   type: UserTokenTypeEnum;
+  jwtRefreshToken?: string;
   oAuthRequestToken?: string;
   oAuthRequestTokenSecret?: string;
   oAuthAccessToken?: string;
@@ -51,6 +53,11 @@ const userTokenSchema: yup.ObjectSchema<any> = yup.object().shape({
     .label('Type')
     .oneOf(enumerations.enumerate(UserTokenTypeEnum))
     .required(),
+  jwtRefreshToken: yup
+    .string()
+    .label('JWT Refresh Tokwn')
+    .optional()
+    .nullable(),
   oAuthRequestToken: yup
     .string()
     .label('OAuth Request Token')
@@ -99,6 +106,7 @@ export class UserToken implements UserTokenInterface {
   public tokenId!: string;
   public userId!: string;
   public type!: UserTokenTypeEnum;
+  public jwtRefreshToken?: string;
   public oAuthRequestToken?: string;
   public oAuthRequestTokenSecret?: string;
   public oAuthAccessToken?: string;
@@ -118,6 +126,7 @@ export class UserToken implements UserTokenInterface {
       tokenId: _.get(userToken, 'tokenId', uuid()),
       userId: _.get(userToken, 'userId', uuid()),
       type: _.get(userToken, 'type', UserTokenTypeEnum.NA),
+      jwtRefreshToken: _.get(userToken, 'jwtRefreshToken'),
       oAuthRequestToken: _.get(userToken, 'oAuthRequestToken'),
       oAuthRequestTokenSecret: _.get(userToken, 'oAuthRequestTokenSecret'),
       oAuthAccessToken: _.get(userToken, 'oAuthAccessToken'),
