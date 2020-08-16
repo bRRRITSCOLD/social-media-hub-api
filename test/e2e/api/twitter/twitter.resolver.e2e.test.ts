@@ -128,103 +128,103 @@ describe('api/twitter/twitter.resolver e2e tests', () => {
   });
 
   describe('POST /graphql', () => {
-    // describe('{ query: { mutation { twitterOAuthRequestToken } } }', () => {
-    //   beforeEach(async () => {
-    //     try {
-    //       // set up
-    //       // none
-    //       // return explicitly
-    //     } catch (err) {
-    //       // throw explicitly
-    //       throw err;
-    //     }
-    //   });
+    describe('{ query: { mutation { twitterOAuthRequestToken } } }', () => {
+      beforeEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
 
-    //   afterEach(async () => {
-    //     try {
-    //       // set up
-    //       // none
-    //       // return explicitly
-    //     } catch (err) {
-    //       // throw explicitly
-    //       throw err;
-    //     }
-    //   });
+      afterEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
 
-    //   it('- should return a url to redirect a user to for twitter authorization within our app', async () => {
-    //     try {
-    //       // set test data
-    //       const userCredentials = cachedUserCredentials;
-    //       // set expectations
-    //       const EXPECTED_STRING_TYPE : any = 'string';
-    //       // run testee
-    //       const httResponse = await app.inject({
-    //         method: 'POST',
-    //         url: '/graphql',
-    //         headers: {
-    //           'content-type': 'application/json',
-    //           authorization: userCredentials.jwt as string,
-    //         },
-    //         payload: {
-    //           query: 'mutation { twitterOAuthRequestToken }',
-    //         },
-    //       });
-    //         // validate results
-    //       expect(httResponse !== undefined).to.be.true;
-    //       expect(httResponse.statusCode !== undefined).to.be.true;
-    //       expect(httResponse.statusCode === 200).to.be.true;
-    //       expect(httResponse.body !== undefined).to.be.true;
-    //       // parse JSON body
-    //       const parsedBody = JSON.parse(httResponse.body);
-    //       // validate results
-    //       expect(parsedBody !== undefined).to.be.true;
-    //       expect(parsedBody.data !== undefined).to.be.true;
-    //       expect(parsedBody.data.twitterOAuthRequestToken !== undefined).to.be.true;
-    //       expect(typeof parsedBody.data.twitterOAuthRequestToken === EXPECTED_STRING_TYPE).to.be.true;
-    //       // TODO: check mongo and make sure that there are an oAuthRequestToken and oAuthRequestTokenSecret for a user's twitter token instance
-    //       // return explicitly
-    //       return;
-    //     } catch (err) {
-    //       // throw explicitly
-    //       throw err;
-    //     }
-    //   });
-    // });
+      it('- should return a url to redirect a user to for twitter authorization within our app', async () => {
+        try {
+          // set test data
+          const userCredentials = cachedUserCredentials;
+          // set expectations
+          const EXPECTED_STRING_TYPE : any = 'string';
+          // run testee
+          const httResponse = await app.inject({
+            method: 'POST',
+            url: '/graphql',
+            headers: {
+              'content-type': 'application/json',
+              authorization: userCredentials.jwt as string,
+            },
+            payload: {
+              query: 'mutation { twitterOAuthRequestToken }',
+            },
+          });
+            // validate results
+          expect(httResponse !== undefined).to.be.true;
+          expect(httResponse.statusCode !== undefined).to.be.true;
+          expect(httResponse.statusCode === 200).to.be.true;
+          expect(httResponse.body !== undefined).to.be.true;
+          // parse JSON body
+          const parsedBody = JSON.parse(httResponse.body);
+          // validate results
+          expect(parsedBody !== undefined).to.be.true;
+          expect(parsedBody.data !== undefined).to.be.true;
+          expect(parsedBody.data.twitterOAuthRequestToken !== undefined).to.be.true;
+          expect(typeof parsedBody.data.twitterOAuthRequestToken === EXPECTED_STRING_TYPE).to.be.true;
+          // TODO: check mongo and make sure that there are an oAuthRequestToken and oAuthRequestTokenSecret for a user's twitter token instance
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+    });
 
-    // describe('{ query: { mutation { twitterOAuthAccessToken } } }', () => {
-    //   beforeEach(async () => {
-    //     try {
-    //       // set up
-    //       // none
-    //       // return explicitly
-    //     } catch (err) {
-    //       // throw explicitly
-    //       throw err;
-    //     }
-    //   });
+    describe('{ query: { mutation { twitterOAuthAccessToken } } }', () => {
+      beforeEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
 
-    //   afterEach(async () => {
-    //     try {
-    //       // set up
-    //       // none
-    //       // return explicitly
-    //     } catch (err) {
-    //       // throw explicitly
-    //       throw err;
-    //     }
-    //   });
+      afterEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
 
-    //   it('- should finish authing our app and a user through twitter via oauth by generating and stroing oauth access tokens in back end datasource', async () => {
-    //     try {
-    //       // TODO: currently cant test with puppeteer - it complains javascript is not enable, even after expliclty setting it
-    //       // return explicitly
-    //       return;
-    //     } catch (err) {
-    //       // throw explicitly
-    //       throw err;
-    //     }
-    //   });
-    // });
+      it('- should finish authing our app and a user through twitter via oauth by generating and stroing oauth access tokens in back end datasource', async () => {
+        try {
+          // TODO: currently cant test with puppeteer - it complains javascript is not enable, even after expliclty setting it
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+    });
 
     describe('{ query: { twitterUserTimeline() {} } }', () => {
       beforeEach(async () => {
