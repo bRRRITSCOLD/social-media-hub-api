@@ -214,8 +214,8 @@ describe('api/user/user.service integration tests', () => {
           const decodedJwt: AnyObject = jwt.decode(loginUserResponse.jwt as string) as AnyObject;
           // validate results
           expect(decodedJwt !== undefined).to.be.true;
-          expect(decodedJwt.emailAddress !== undefined).to.be.true;
-          expect(decodedJwt.emailAddress === EXPECTED_USER_DATA.emailAddress).to.be.true;
+          expect(decodedJwt.userId !== undefined).to.be.true;
+          expect(decodedJwt.userId === EXPECTED_USER_DATA.userId).to.be.true;
           // return explicitly
           return;
         } catch (err) {
