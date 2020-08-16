@@ -1,62 +1,124 @@
-/* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // node_modules
-import { expect } from 'chai';
-// import { v4 as uuid } from 'uuid';
-import * as _ from 'lodash';
 import { FastifyInstance, FastifyLoggerInstance } from 'fastify';
 import { IncomingMessage, Server, ServerResponse } from 'http';
+import { expect } from 'chai';
+import * as _ from 'lodash';
 
 // libraries
-import * as testUtils from '../../../lib/utils';
-import { mongo } from '../../../../src/lib/mongo';
+import Container from 'typedi';
 import { env } from '../../../../src/lib/environment';
+import { oAuthConnector } from '../../../../src/lib/authentication';
 import * as cryptography from '../../../../src/lib/cryptography';
+import { testEnv } from '../../../lib/environment';
+import { mongo } from '../../../../src/lib/mongo';
+
 // models
-import { User, UserInterface } from '../../../../src/models/user';
-
-// mock/static data
-import { MockUser } from '../../../data/mock/user';
-
-// app bootstrap
-import { bootstrap } from '../../../../src/app';
 import { AnyObject } from '../../../../src/models/any';
-import { jwt } from '../../../../src/lib/authentication';
 
-// let mockUsers: Partial<User>[] | Partial<MockUser>[];
-let staticUsers: Partial<User>[] | Partial<MockUser>[];
-
-let testUsers: Partial<User>[] | Partial<MockUser>[];
+// services
+import { UserService } from '../../../../src/api/user/user.service';
 
 // testees
+import { bootstrap } from '../../../../src/app';
+import { APIError } from '../../../../src/models/error';
+import { UserTokenInterface, UserTokenTypeEnum } from '../../../../src/models/user-token';
+
 let app: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>;
 
+// mock/static/cached data
+let cachedUserCredentials: { jwt: string | AnyObject | null; };
+let cachedTwitterUserToken: UserTokenInterface;
+
+// file constants/functions
+const userService = Container.get<UserService>(UserService);
+
+async function customStartUp() {
+  try {
+    // get mongo connection
+    const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+    // query mongo to get user that is testing
+    // by email address (testEnv.EMAIL_ADDRESS)
+    const [existingUser] = await socialMediaHubDb
+      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+      .find({ emailAddress: testEnv.EMAIL_ADDRESS, password: { $exists: true, $ne: null } })
+      .toArray();
+    // validate we found a user
+    if (!existingUser) throw new APIError(
+      new Error(`Could not find user ${testEnv.EMAIL_ADDRESS}`),
+    );
+    // validate passwords match
+    if (!await cryptography.password.compare(testEnv.PASSWORD, existingUser.password)) throw new APIError(
+      new Error(`Failed to login for user ${testEnv.EMAIL_ADDRESS}`),
+    );
+    // query mongo to get a user's twitter tokens
+    const [existingUserToken] = await socialMediaHubDb
+      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
+      .find({
+        userId: existingUser.userId,
+        type: UserTokenTypeEnum.TWITTER,
+        oAuthAccessToken: { $exists: true, $ne: null },
+        oAuthAccessTokenSecret: { $exists: true, $ne: null },
+        twitterScreenName: { $exists: true, $ne: null },
+        twitterUserId: { $exists: true, $ne: null },
+      })
+      .toArray();
+    // validate we found a twitter user token
+    if (!existingUserToken) throw new APIError(
+      new Error(`Could not find twitter user token for ${testEnv.EMAIL_ADDRESS}`),
+    );
+    // cache valid user twitter token to use in tests
+    cachedTwitterUserToken = _.assign(
+      {},
+      existingUserToken,
+    );
+    // login the user to aquire correct jwt
+    const userCredentials = await userService.loginUser({
+      emailAddress: testEnv.EMAIL_ADDRESS,
+      password: testEnv.PASSWORD,
+      ipAddress: '127.0.0.1',
+    });
+    // cache the user's credentials
+    cachedUserCredentials = _.assign({}, userCredentials);
+    // create and store app
+    app = await bootstrap();
+    // return explicitly
+    return;
+  } catch (err) {
+    // throw error explicitly
+    throw err;
+  }
+}
+
 // tests
-describe('api/service/user.resolver integration tests', () => {
+describe('api/twitter/twitter.resolver e2e tests', () => {
   before(async () => {
     try {
-      // load env
-      await env.init({ ...require('../../../../src/configs/environment').default });
+      // load envs
+      await Promise.all([
+        env.init({
+          ...require('../../../../src/configs/environment').default,
+          options: {
+            path: './.env',
+            example: './.env.example',
+          },
+        }),
+        testEnv.init({
+          ...require('../../../../src/configs/environment').default,
+          options: {
+            path: './.env.test',
+            example: './.env.test.example',
+          },
+        }),
+      ]);
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
         mongo.init([...require('../../../../src/configs/datasources/mongo').default]),
       ]);
-      // load data for tests
-      staticUsers = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/users.json`, { encoding: 'utf-8' }));
-      // mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
-      // set env vars accordingly for tests
-      env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersIntegrationTest';
-      // get mongo connection
-      const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-      // get current collections
-      const collections = await socialMediaHubDb.collections();
-      // create test collection if not found
-      if (!collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
-        await socialMediaHubDb.createCollection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
-      // clear test collection
-      await socialMediaHubDb.collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME).deleteMany({});
-      // create and store app
-      app = await bootstrap();
+      // initialize synchronous libraries, connectiones, etc. here
+      [oAuthConnector.init([...require('../../../../src/configs/oauth').default])];
+      // cusom start up functionality
+      await customStartUp();
       // return explicitly
       return;
     } catch (err) {
@@ -66,233 +128,182 @@ describe('api/service/user.resolver integration tests', () => {
   });
 
   describe('POST /graphql', () => {
-    describe('{ query: { mutation { login(data: LoginInputType) } } }', () => {
-      context('static data', () => {
-        beforeEach(async () => {
-          try {
-            // create test data
-            testUsers = staticUsers.slice(0, staticUsers.length);
-            // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-            // clear data
-            await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-              .deleteMany({});
-            // return explicitly
-          } catch (err) {
-            // throw explicitly
-            throw err;
-          }
-        });
+    // describe('{ query: { mutation { twitterOAuthRequestToken } } }', () => {
+    //   beforeEach(async () => {
+    //     try {
+    //       // set up
+    //       // none
+    //       // return explicitly
+    //     } catch (err) {
+    //       // throw explicitly
+    //       throw err;
+    //     }
+    //   });
 
-        afterEach(async () => {
-          try {
-            // reset test data
-            testUsers = [];
-            // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-            // clear data
-            await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-              .deleteMany({});
-            // return explicitly
-          } catch (err) {
-            // throw explicitly
-            throw err;
-          }
-        });
+    //   afterEach(async () => {
+    //     try {
+    //       // set up
+    //       // none
+    //       // return explicitly
+    //     } catch (err) {
+    //       // throw explicitly
+    //       throw err;
+    //     }
+    //   });
 
-        it('- should register a user and return the user without a password', async () => {
-          try {
-            // set test data
-            const testUser = testUsers.slice(0, 1)[0];
-            // set expectations
-            // const EXPECTED_ARRAY_CLASS_INSTANCE: any = Array;
-            // const EXPECTED_USER_CLASS_INSTANCE: any = User;
-            // const EXPECTED_USERS_LENGTH: any = 1;
-            const EXPECTED_USER_DATA: any = [testUser].slice(0, 1)[0];
-            // run testee
-            const httResponse = await app.inject({
-              method: 'POST',
-              url: '/graphql',
-              headers: {
-                'content-type': 'application/json',
-              },
-              payload: {
-                query: `mutation registerUser($data: RegisterUserInputType!) {
-                  registerUser(data: $data) {
-                    emailAddress,
-                    firstName,
-                    lastName,
-                    password
-                  }
-                }`,
-                variables: {
-                  data: { ...testUser },
-                },
-              },
-            });
-            // validate results
-            expect(httResponse !== undefined).to.be.true;
-            expect(httResponse.statusCode !== undefined).to.be.true;
-            expect(httResponse.statusCode === 200).to.be.true;
-            expect(httResponse.body !== undefined).to.be.true;
-            // parse JSON body
-            const parsedBody = JSON.parse(httResponse.body);
-            // validate results
-            expect(parsedBody !== undefined).to.be.true;
-            expect(parsedBody.data !== undefined).to.be.true;
-            expect(parsedBody.data.registerUser !== undefined).to.be.true;
-            expect(parsedBody.data.registerUser.emailAddress !== undefined).to.be.true;
-            expect(parsedBody.data.registerUser.emailAddress === EXPECTED_USER_DATA.emailAddress).to.be.true;
-            expect(parsedBody.data.registerUser.firstName !== undefined).to.be.true;
-            expect(parsedBody.data.registerUser.firstName === EXPECTED_USER_DATA.firstName).to.be.true;
-            expect(parsedBody.data.registerUser.lastName !== undefined).to.be.true;
-            expect(parsedBody.data.registerUser.lastName === EXPECTED_USER_DATA.lastName).to.be.true;
-            expect(parsedBody.data.registerUser.password !== undefined).to.be.true;
-            expect(parsedBody.data.registerUser.password === null).to.be.true;
-            // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-            // search for it in back end
-            const [foundUser] = await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-              .find({ emailAddress: EXPECTED_USER_DATA.emailAddress })
-              .toArray();
-            // validate results
-            expect(foundUser !== undefined).to.be.true;
-            expect(foundUser.emailAddress !== undefined).to.be.true;
-            expect(foundUser.emailAddress === EXPECTED_USER_DATA.emailAddress).to.be.true;
-            expect(foundUser.firstName !== undefined).to.be.true;
-            expect(foundUser.firstName === EXPECTED_USER_DATA.firstName).to.be.true;
-            expect(foundUser.lastName !== undefined).to.be.true;
-            expect(foundUser.lastName === EXPECTED_USER_DATA.lastName).to.be.true;
-            expect(foundUser.password !== undefined).to.be.true;
-            expect(foundUser.password !== undefined).to.be.true;
-            expect(foundUser.password !== EXPECTED_USER_DATA.password).to.be.true;
-            expect(await cryptography.password.compare(EXPECTED_USER_DATA.password, foundUser.password)).to.be.true;
-            // return explicitly
-            return;
-          } catch (err) {
-            // throw explicitly
-            throw err;
-          }
-        });
+    //   it('- should return a url to redirect a user to for twitter authorization within our app', async () => {
+    //     try {
+    //       // set test data
+    //       const userCredentials = cachedUserCredentials;
+    //       // set expectations
+    //       const EXPECTED_STRING_TYPE : any = 'string';
+    //       // run testee
+    //       const httResponse = await app.inject({
+    //         method: 'POST',
+    //         url: '/graphql',
+    //         headers: {
+    //           'content-type': 'application/json',
+    //           authorization: userCredentials.jwt as string,
+    //         },
+    //         payload: {
+    //           query: 'mutation { twitterOAuthRequestToken }',
+    //         },
+    //       });
+    //         // validate results
+    //       expect(httResponse !== undefined).to.be.true;
+    //       expect(httResponse.statusCode !== undefined).to.be.true;
+    //       expect(httResponse.statusCode === 200).to.be.true;
+    //       expect(httResponse.body !== undefined).to.be.true;
+    //       // parse JSON body
+    //       const parsedBody = JSON.parse(httResponse.body);
+    //       // validate results
+    //       expect(parsedBody !== undefined).to.be.true;
+    //       expect(parsedBody.data !== undefined).to.be.true;
+    //       expect(parsedBody.data.twitterOAuthRequestToken !== undefined).to.be.true;
+    //       expect(typeof parsedBody.data.twitterOAuthRequestToken === EXPECTED_STRING_TYPE).to.be.true;
+    //       // TODO: check mongo and make sure that there are an oAuthRequestToken and oAuthRequestTokenSecret for a user's twitter token instance
+    //       // return explicitly
+    //       return;
+    //     } catch (err) {
+    //       // throw explicitly
+    //       throw err;
+    //     }
+    //   });
+    // });
+
+    // describe('{ query: { mutation { twitterOAuthAccessToken } } }', () => {
+    //   beforeEach(async () => {
+    //     try {
+    //       // set up
+    //       // none
+    //       // return explicitly
+    //     } catch (err) {
+    //       // throw explicitly
+    //       throw err;
+    //     }
+    //   });
+
+    //   afterEach(async () => {
+    //     try {
+    //       // set up
+    //       // none
+    //       // return explicitly
+    //     } catch (err) {
+    //       // throw explicitly
+    //       throw err;
+    //     }
+    //   });
+
+    //   it('- should finish authing our app and a user through twitter via oauth by generating and stroing oauth access tokens in back end datasource', async () => {
+    //     try {
+    //       // TODO: currently cant test with puppeteer - it complains javascript is not enable, even after expliclty setting it
+    //       // return explicitly
+    //       return;
+    //     } catch (err) {
+    //       // throw explicitly
+    //       throw err;
+    //     }
+    //   });
+    // });
+
+    describe('{ query: { twitterUserTimeline() {} } }', () => {
+      beforeEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
       });
-    });
 
-    describe('{ query: { mutation { registerUser(data: RegisterserInputType) } } }', () => {
-      context('static data', () => {
-        beforeEach(async () => {
-          try {
-            // create test data
-            testUsers = staticUsers.slice(0, staticUsers.length);
-            // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-            // clear data
-            await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-              .deleteMany({});
-            // seed data
-            await (async () => {
-              const saltRounds = await cryptography.password.genSalt();
-              await socialMediaHubDb
-                .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-                .insertMany(await Promise.all(testUsers.map(async (testUser: Partial<User>) =>
-                  _.assign({}, testUser, { password: await cryptography.password.hash(testUser.password, saltRounds) }))));
-            })();
-            // return explicitly
-          } catch (err) {
-            // throw explicitly
-            throw err;
-          }
-        });
+      afterEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
 
-        afterEach(async () => {
-          try {
-            // reset test data
-            testUsers = [];
-            // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-            // clear data
-            await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-              .deleteMany({});
-            // return explicitly
-          } catch (err) {
-            // throw explicitly
-            throw err;
-          }
-        });
-
-        it('- should login as a user and return a jwt for said user', async () => {
-          try {
-            // set test data
-            const testUser = testUsers.slice(0, 1)[0];
-            // set expectations
-            // const EXPECTED_ARRAY_CLASS_INSTANCE: any = Array;
-            // const EXPECTED_USER_CLASS_INSTANCE: any = User;
-            // const EXPECTED_USERS_LENGTH: any = 1;
-            const EXPECTED_USER_DATA: any = [testUser].slice(0, 1)[0];
-            // run testee
-            const httResponse = await app.inject({
-              method: 'POST',
-              url: '/graphql',
-              headers: {
-                'content-type': 'application/json',
-              },
-              payload: {
-                query: `mutation login($data: LoginInputType!) {
-                  login(data: $data) {
-                    jwt
+      it('- should return a twitter user timeline that matches the given criteria', async () => {
+        try {
+          // set test data
+          const userCredentials = cachedUserCredentials;
+          // set expectations
+          // const EXPECTED_MINIMUM_TWITTER_USER_TIMELINE_TWEETS_LENGTH: any = 1;
+          // run testee
+          const httResponse = await app.inject({
+            method: 'POST',
+            url: '/graphql',
+            headers: {
+              'content-type': 'application/json',
+              authorization: userCredentials.jwt as string,
+            },
+            payload: {
+              query: `{
+                twitterUserTimeline(
+                  twitterScreenName: "${cachedTwitterUserToken.twitterScreenName}",
+                  count: 100
+                ) {
+                  createdAt,
+                  text,
+                  source,
+                  user {
+                    name,
+                    screenName
                   }
-                }`,
-                variables: {
-                  data: {
-                    emailAddress: testUser.emailAddress,
-                    password: testUser.password,
-                  },
-                },
-              },
-            });
-            // validate results
-            expect(httResponse !== undefined).to.be.true;
-            expect(httResponse.statusCode !== undefined).to.be.true;
-            expect(httResponse.statusCode === 200).to.be.true;
-            expect(httResponse.body !== undefined).to.be.true;
-            // parse JSON body
-            const parsedBody = JSON.parse(httResponse.body);
-            // validate results
-            expect(parsedBody !== undefined).to.be.true;
-            expect(parsedBody.data !== undefined).to.be.true;
-            expect(parsedBody.data.login !== undefined).to.be.true;
-            expect(parsedBody.data.loginUser.jwt !== undefined).to.be.true;
-            // decode jwt
-            const decodedJwt: AnyObject = jwt.decode(parsedBody.data.loginUser.jwt as string) as AnyObject;
-            // validate results
-            expect(decodedJwt !== undefined).to.be.true;
-            expect(decodedJwt.emailAddress !== undefined).to.be.true;
-            expect(decodedJwt.emailAddress === EXPECTED_USER_DATA.emailAddress).to.be.true;
-            // return explicitly
-            return;
-          } catch (err) {
-            // throw explicitly
-            throw err;
-          }
-        });
+                }
+              }`,
+            },
+          });
+          // validate results
+          expect(httResponse !== undefined).to.be.true;
+          expect(httResponse.statusCode !== undefined).to.be.true;
+          expect(httResponse.statusCode === 200).to.be.true;
+          expect(httResponse.body !== undefined).to.be.true;
+          // parse JSON body
+          const parsedBody = JSON.parse(httResponse.body);
+          // validate results
+          expect(parsedBody !== undefined).to.be.true;
+          expect(parsedBody.data !== undefined).to.be.true;
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
       });
     });
   });
 
   after(async () => {
     try {
-      // get mongo connection
-      const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-      // get current collections
-      const collections = await socialMediaHubDb.collections();
-      // drop test collection if found
-      if (collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
-        await socialMediaHubDb.dropCollection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
       // return explicitly
+      return;
     } catch (err) {
       // throw explicitly
       throw err;

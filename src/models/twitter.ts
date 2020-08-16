@@ -34,107 +34,7 @@ import { ObjectType, Field } from 'type-graphql';
 //   // public stars?: number;
 // }
 
-@ObjectType({ description: 'Twitter model' })
-export class Twitter {
-  @Field((_type: unknown) => Boolean, { nullable: true })
-  public loggedIn?: boolean;
-}
-
-export interface Tweet {
-  createdAt: string;
-  id: number;
-  idStr: string;
-  text: string;
-  truncated: boolean;
-  entities: TweetEntities;
-  extendedEntities: TweetExtendedEntities;
-  source: string;
-  inReplyToStatusId?: null;
-  inReplyToStatusIdStr?: null;
-  inReplyToUserId?: null;
-  inReplyToUserIdStr?: null;
-  inReplyToScreenName?: null;
-  user: User;
-  geo?: null;
-  coordinates?: null;
-  place?: null;
-  contributors?: null;
-  isQuoteStatus: boolean;
-  retweetCount: number;
-  favoriteCount: number;
-  favorited: boolean;
-  retweeted: boolean;
-  possiblySensitive: boolean;
-  possiblySensitiveAppealable: boolean;
-  lang: string;
-}
-
-export interface TweetEntities {
-  hashtags?: (null)[] | null;
-  symbols?: (null)[] | null;
-  userMentions?: (null)[] | null;
-  urls?: (null)[] | null;
-  media?: (TweetMediaEntity)[] | null;
-}
-
-export interface TweetMediaEntity {
-  id: number;
-  idStr: string;
-  indices?: (number)[] | null;
-  mediaUrl: string;
-  mediaUrlHttps: string;
-  url: string;
-  displayUrl: string;
-  expandedUrl: string;
-  type: string;
-  sizes: TweetMediaEntitySizes;
-}
-
-export interface TweetMediaEntitySizes {
-  thumb: ThumbOrSmallOrMediumOrLarge;
-  small: ThumbOrSmallOrMediumOrLarge;
-  medium: ThumbOrSmallOrMediumOrLarge;
-  large: ThumbOrSmallOrMediumOrLarge;
-}
-
-export interface ThumbOrSmallOrMediumOrLarge {
-  w: number;
-  h: number;
-  resize: string;
-}
-
-export interface TweetExtendedEntities {
-  media?: (TweetMediaEntity)[] | null;
-}
-
-export interface VideoInfo {
-  aspectRatio?: (number)[] | null;
-  durationMillis: number;
-  variants?: (VariantsEntity)[] | null;
-}
-
-export interface VariantsEntity {
-  bitrate?: number | null;
-  contentType: string;
-  url: string;
-}
-
-export interface AdditionalMediaInfo {
-  title: string;
-  description: string;
-  callToActions: CallToActions;
-  monetizable: boolean;
-}
-
-export interface CallToActions {
-  visitSite: VisitSite;
-}
-
-export interface VisitSite {
-  url: string;
-}
-
-export interface User {
+export interface TwitterUserInterface {
   id: number;
   idStr: string;
   name: string;
@@ -142,19 +42,18 @@ export interface User {
   location: string;
   description: string;
   url: string;
-  entities: Entities1;
   protected: boolean;
   followersCount: number;
   friendsCount: number;
   listedCount: number;
   createdAt: string;
   favouritesCount: number;
-  utcOffset?: null;
-  timeZone?: null;
+  utcOffset?: string | null;
+  timeZone?: string | null;
   geoEnabled: boolean;
   verified: boolean;
   statusesCount: number;
-  lang?: null;
+  lang?: string | null;
   contributorsEnabled: boolean;
   isTranslator: boolean;
   isTranslationEnabled: boolean;
@@ -179,22 +78,29 @@ export interface User {
   translatorType: string;
 }
 
-export interface Entities1 {
-  url: Url;
-  description: Description;
-}
-
-export interface Url {
-  urls?: (UrlsEntity)[] | null;
-}
-
-export interface UrlsEntity {
-  url: string;
-  expandedUrl: string;
-  displayUrl: string;
-  indices?: (number)[] | null;
-}
-
-export interface Description {
-  urls?: (null)[] | null;
+export interface TwitterTweetInterface {
+  createdAt: string;
+  id: number;
+  idStr: string;
+  text: string;
+  truncated: boolean;
+  source: string;
+  inReplyToStatusId?: number | null;
+  inReplyToStatusIdStr?: string | null;
+  inReplyToUserId?: number | null;
+  inReplyToUserIdStr?: string | null;
+  inReplyToScreenName?: string | null;
+  user: TwitterUserInterface;
+  geo?: string | null;
+  coordinates?: string | null;
+  place?: string | null;
+  contributors?: string | null;
+  isQuoteStatus: boolean;
+  retweetCount: number;
+  favoriteCount: number;
+  favorited: boolean;
+  retweeted: boolean;
+  possiblySensitive: boolean;
+  possiblySensitiveAppealable: boolean;
+  lang: string;
 }

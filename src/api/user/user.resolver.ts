@@ -52,7 +52,7 @@ export class UserResolver {
       // log for debugging and run support purposes
       logger.error(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
-      throw error;
+      throw { errors: [error] };
     }
   }
 
@@ -71,7 +71,7 @@ export class UserResolver {
       // log for debugging and run support purposes
       logger.error(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
-      throw error;
+      throw { errors: [error] };
     }
   }
 

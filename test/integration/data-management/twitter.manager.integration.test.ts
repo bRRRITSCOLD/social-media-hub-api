@@ -3,12 +3,10 @@
 import fastify from 'fastify';
 import { expect } from 'chai';
 import * as _ from 'lodash';
-import puppeteer from 'puppeteer';
 
 // libraries
 import { env } from '../../../src/lib/environment';
 import { oAuthConnector } from '../../../src/lib/authentication';
-import { files } from '../../lib/utils';
 import { testEnv } from '../../lib/environment';
 import { mongo } from '../../../src/lib/mongo';
 import * as cryptography from '../../../src/lib/cryptography';
@@ -20,40 +18,6 @@ import { APIError } from '../../../src/models/error';
 import * as twitterManager from '../../../src/data-management/twitter.manager';
 import { UserTokenInterface, UserTokenTypeEnum } from '../../../src/models/user-token';
 
-const toCamel = (s: any) => {
-  return s.replace(/([-_][a-z])/ig, ($1: any) => {
-    return $1.toUpperCase()
-      .replace('-', '')
-      .replace('_', '');
-  });
-};
-
-const isArray = function (a: any) {
-  return Array.isArray(a);
-};
-
-const isObject = function (o: any) {
-  return o === Object(o) && !isArray(o) && typeof o !== 'function';
-};
-
-const keysToCamel = function (o: any) {
-  if (isObject(o)) {
-    const n = {};
-
-    Object.keys(o)
-      .forEach((k: any) => {
-        (n as any)[toCamel(k)] = keysToCamel(o[k]);
-      });
-
-    return n;
-  } if (isArray(o)) {
-    return o.map((i: any) => {
-      return keysToCamel(i);
-    });
-  }
-
-  return o;
-};
 // mock/static/cached data
 let cachedTwitterUserToken: UserTokenInterface;
 
@@ -212,7 +176,6 @@ describe('data-management/twitter.manager integration tests', () => {
             screenName: cachedTwitterUserToken.twitterScreenName,
             count: 50,
           });
-          files.writeFile('example-tweet-user-timeline.json', JSON.stringify(keysToCamel(getUserTimelineResponse), null, 2));
           // validate results
           expect(getUserTimelineResponse !== undefined).to.be.true;
           // return explicitly
@@ -257,7 +220,6 @@ describe('data-management/twitter.manager integration tests', () => {
             screenName: cachedTwitterUserToken.twitterScreenName,
             count: 50,
           });
-          files.writeFile('example-tweet-home-timeline.json', JSON.stringify(keysToCamel(getHomeTimelineResponse), null, 2));
           // validate results
           expect(getHomeTimelineResponse !== undefined).to.be.true;
           // return explicitly
@@ -302,7 +264,6 @@ describe('data-management/twitter.manager integration tests', () => {
             screenName: cachedTwitterUserToken.twitterScreenName,
             count: 100,
           });
-          files.writeFile('example-tweet-mentions-timeline.json', JSON.stringify(keysToCamel(getMentionsTimelineResponse), null, 2));
           // validate results
           expect(getMentionsTimelineResponse !== undefined).to.be.true;
           // return explicitly

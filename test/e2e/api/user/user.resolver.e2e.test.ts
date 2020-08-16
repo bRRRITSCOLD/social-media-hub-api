@@ -12,24 +12,24 @@ import * as testUtils from '../../../lib/utils';
 import { mongo } from '../../../../src/lib/mongo';
 import { env } from '../../../../src/lib/environment';
 import * as cryptography from '../../../../src/lib/cryptography';
+import { jwt } from '../../../../src/lib/authentication';
+
 // models
 import { User, UserInterface } from '../../../../src/models/user';
+import { AnyObject } from '../../../../src/models/any';
 
 // mock/static data
 import { MockUser } from '../../../data/mock/user';
 
-// app bootstrap
+// testees
 import { bootstrap } from '../../../../src/app';
-import { AnyObject } from '../../../../src/models/any';
-import { jwt } from '../../../../src/lib/authentication';
+
+let app: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>;
 
 // let mockUsers: Partial<User>[] | Partial<MockUser>[];
 let staticUsers: Partial<User>[] | Partial<MockUser>[];
 
 let testUsers: Partial<User>[] | Partial<MockUser>[];
-
-// testees
-let app: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>;
 
 // tests
 describe('api/service/user.resolver integration tests', () => {
@@ -45,7 +45,7 @@ describe('api/service/user.resolver integration tests', () => {
       staticUsers = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/users.json`, { encoding: 'utf-8' }));
       // mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
       // set env vars accordingly for tests
-      env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersIntegrationTest';
+      env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersE2eTest';
       // get mongo connection
       const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
       // get current collections

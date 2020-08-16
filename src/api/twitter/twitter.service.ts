@@ -8,7 +8,7 @@ import { promises } from 'fs-extra';
 import { oAuthConnector, OAuth } from '../../lib/authentication';
 import { env } from '../../lib/environment';
 import { logger } from '../../lib/logger';
-import { anyy } from '../../lib/utils';
+import { anyy, objects } from '../../lib/utils';
 import * as cryptography from '../../lib/cryptography';
 
 // models
@@ -21,11 +21,11 @@ import * as userTokenManager from '../../data-management/user-token.manager';
 import * as twitterManager from '../../data-management/twitter.manager';
 
 @Service()
-export class TwitterService {
-  public async getOAuthRequestToken(data: { userId: string; }): Promise<UserToken> {
+export class TwitterAccessService {
+  public async oAuthRequestToken(data: { userId: string; }): Promise<UserToken> {
     try {
       // log for debugging and run support purposes
-      logger.info('{}TwitterService::#getOAuthRequestToken::initiating execution');
+      logger.info('{}TwitterService::#oAuthRequestToken::initiating execution');
       // deconstruct for ease
       const { userId } = data;
       // fetch the user that is requesting
@@ -98,20 +98,20 @@ export class TwitterService {
         }),
       ]);
       // log for debugging and run support purposes
-      logger.info('{}TwitterService::#getOAuthRequestToken::successfully executed');
+      logger.info('{}TwitterService::#oAuthRequestToken::successfully executed');
       // return resulst explicitly
       return twitterAccessRequestUserTwitterToken;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.info(`{}TwitterService::#getOAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}TwitterService::#oAuthRequestToken::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
   }
 
-  public async getOAuthAccessToken(
+  public async oAuthAccessToken(
     data: {
       userId: string;
       oAuthRequestToken: string;
@@ -121,7 +121,7 @@ export class TwitterService {
   ): Promise<boolean> {
     try {
       // log for debugging and run support purposes
-      logger.info('{}TwitterService::#getOAuthAccessToken::initiating execution');
+      logger.info('{}TwitterService::#oAuthAccessToken::initiating execution');
       // deconstruct for ease
       const {
         userId,
@@ -204,30 +204,49 @@ export class TwitterService {
         }),
       ]);
       // log for debugging and run support purposes
-      logger.info('{}TwitterService::#getOAuthAccessToken::successfully executed');
+      logger.info('{}TwitterService::#oAuthAccessToken::successfully executed');
       // return resulst explicitly
       return true;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.info(`{}TwitterService::#getOAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}TwitterService::#oAuthAccessToken::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
   }
+}
 
-  public async getUserTimeline(
+@Service()
+export class TwitterTimelineService {
+  public async userTimeline(
     data: {
       userId: string;
+      twitterUserId?: string;
+      twitterScreenName?: string;
+      sinceId?: string;
+      maxId?: string;
+      count?: number;
+      trimUser?: string;
+      excludeReplies?: string;
+      includeRts?: string;
     },
   ): Promise<any> {
     try {
       // log for debugging and run support purposes
-      logger.info('{}TwitterService::#getUserTimeline::initiating execution');
+      logger.info('{}TwitterService::#userTimeline::initiating execution');
       // deconstruct for ease
       const {
         userId,
+        twitterUserId,
+        twitterScreenName,
+        sinceId,
+        maxId,
+        count,
+        trimUser,
+        excludeReplies,
+        includeRts,
       } = data;
       // query for the user that is attempting to
       // get the oauth request token for twitter
@@ -266,18 +285,27 @@ export class TwitterService {
       // get to get twitter access tokens and
       // additional information
       const getUserTimelineResponse = await twitterManager.getUserTimeline({
-        oAuthAccessToken: _.get(existingUserToken, 'oAuthAccessToken', ''),
-        oAuthAccessTokenSecret: _.get(existingUserToken, 'oAuthAccessTokenSecret', ''),
+        oAuthAccessToken: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessToken', '')),
+        oAuthAccessTokenSecret: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessTokenSecret', '')),
+        userId: twitterUserId,
+        screenName: twitterScreenName,
+        sinceId,
+        maxId,
+        count,
+        trimUser,
+        excludeReplies,
+        includeRts,
       });
       // log for debugging and run support purposes
-      logger.info('{}TwitterService::#getUserTimeline::successfully executed');
+      logger.info('{}TwitterService::#userTimeline::successfully executed');
       // return resulst explicitly
-      return getUserTimelineResponse;
+      return getUserTimelineResponse
+        .map((rawTweet: any) => objects.keysToCamel(rawTweet));
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.info(`{}TwitterService::#getUserTimeline::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}TwitterService::#userTimeline::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

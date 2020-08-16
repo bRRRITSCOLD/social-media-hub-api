@@ -63,7 +63,7 @@ export class UserService {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.info(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
@@ -84,16 +84,17 @@ export class UserService {
         searchCriteria: { emailAddress },
         searchOptions: { pageNumber: 1, pageSize: 1 },
       });
+      // if there is an existing user throw an error -
+      // only one user allowed per email address
+      if (!existingUser) throw new APIError(
+        new Error(`No user found with the email address ${emailAddress}`),
+        { statusCode: 404 },
+      );
       // grab a user's tokens
       const { userTokens: existingUserTokens } = await userTokenManager.searchUserTokens({
         searchCriteria: { userId: existingUser.userId },
         searchOptions: { pageNumber: 1, pageSize: 1 },
       });
-      // if there is an existing user throw an error -
-      // only one user allowed per email address
-      if (!existingUser) throw new APIError(
-        new Error(`No user found with the email address ${emailAddress}`),
-      );
       // compare a user's password
       if (!await cryptography.password.compare(password, existingUser.password)) throw new APIError(
         new Error(`Error logging in with email address ${emailAddress}`),
@@ -127,7 +128,7 @@ export class UserService {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.info(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

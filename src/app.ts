@@ -67,12 +67,6 @@ const bootstrap = async () => {
           response,
         };
       },
-      errorHandler: (err: any, _service: any) => {
-        // build error
-        const error = new APIError(err);
-        // log for debugging and run support purposes
-        logger.error(`{}App::graphql::#errorHandler::error=${anyy.stringify(error)}`);
-      },
     });
     // return app explicitly
     return fastifyApp;
