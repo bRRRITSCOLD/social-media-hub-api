@@ -25,26 +25,27 @@ function exit(code?: number | string | boolean | any) {
   // build exit code
   const exitCode = code || 1;
   // log for debugging and POTENTIAL run purposes
-  logger.error(`{}App::#onError::code=${anyy.stringify(code)}`);
+  if (exitCode === 0) logger.info(`{}App::#exit::code=${anyy.stringify(exitCode)}`);
+  else logger.error(`{}App::#exit::code=${anyy.stringify(exitCode)}`);
   // exit process after timeout to let streams clear
   setTimeout(() => {
-    process.exit(code);
+    process.exit(exitCode);
   }, 1500);
 }
 
 // catch all possible exits in app
 onExit((code: unknown, signal: unknown) => {
   // log for debugging and run support purposes
-  logger.error(`{}App::#onExit::code=${anyy.stringify(code)}::signal=${anyy.stringify(signal)}`);
-  // exit explicitly
-  exit(1);
+  logger.info(`{}App::#onExit::code=${anyy.stringify(code)}::signal=${anyy.stringify(signal)}`);
+  // return explicitly
+  return;
 });
 
 process.on('uncaughtException', (err: unknown) => {
   // build error
   const error = new APIError(err);
   // log for debugging and run support purposes
-  logger.error(`{}App::#onExit::code=${anyy.stringify(error)}`);
+  logger.error(`{}App::uncaughtException::error=${anyy.stringify(error)}`);
   // exit explicitly
   exit(1);
 });
@@ -53,7 +54,7 @@ process.on('unhandledRejection', (err: unknown) => {
   // build error
   const error = new APIError(err);
   // log for debugging and run support purposes
-  logger.error(`{}App::#onExit::code=${anyy.stringify(error)}`);
+  logger.error(`{}App::unhandledRejection::error=${anyy.stringify(error)}`);
   // exit explicitly
   exit(1);
 });
