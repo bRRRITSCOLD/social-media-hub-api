@@ -17,7 +17,7 @@ import { mongo } from '../../../../src/lib/mongo';
 import { AnyObject } from '../../../../src/models/any';
 
 // services
-import { UserService } from '../../../../src/api/user/user.service';
+import { UserAccessService } from '../../../../src/api/user/user.service';
 
 // testees
 import { bootstrap } from '../../../../src/app';
@@ -31,7 +31,7 @@ let cachedUserCredentials: { jwt: string | AnyObject | null; };
 let cachedTwitterUserToken: UserTokenInterface;
 
 // file constants/functions
-const userService = Container.get<UserService>(UserService);
+const userAccessService = Container.get<UserAccessService>(UserAccessService);
 
 async function customStartUp() {
   try {
@@ -73,7 +73,7 @@ async function customStartUp() {
       existingUserToken,
     );
     // login the user to aquire correct jwt
-    const userCredentials = await userService.loginUser({
+    const userCredentials = await userAccessService.loginUser({
       emailAddress: testEnv.EMAIL_ADDRESS,
       password: testEnv.PASSWORD,
       ipAddress: '127.0.0.1',

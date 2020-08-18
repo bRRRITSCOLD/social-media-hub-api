@@ -18,11 +18,11 @@ import { User, UserInterface } from '../../../../src/models/user';
 import { MockUser } from '../../../data/mock/user';
 
 // testees
-import { UserService } from '../../../../src/api/user/user.service';
+import { UserAccessService } from '../../../../src/api/user/user.service';
 import { jwt } from '../../../../src/lib/authentication';
 import { AnyObject } from '../../../../src/models/any';
 
-const userService = Container.get<UserService>(UserService);
+const userAccessService = Container.get<UserAccessService>(UserAccessService);
 
 // let mockUsers: Partial<User>[] | Partial<MockUser>[];
 let staticUsers: Partial<User>[] | Partial<MockUser>[];
@@ -105,7 +105,7 @@ describe('api/user/user.service integration tests', () => {
           const EXPECTED_USER_CLASS_INSTANCE: any = User;
           const EXPECTED_USER_DATA: any = [testUser].slice(0, 1)[0];
           // run testee
-          const registerUserResponse = await userService.registerUser(testUser as UserInterface);
+          const registerUserResponse = await userAccessService.registerUser(testUser as UserInterface);
           // validate results
           expect(registerUserResponse !== undefined).to.be.true;
           expect(registerUserResponse instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;
@@ -201,7 +201,7 @@ describe('api/user/user.service integration tests', () => {
           // const EXPECTED_USERS_LENGTH: any = 1;
           const EXPECTED_USER_DATA: any = [testUser].slice(0, 1)[0];
           // run testee
-          const loginUserResponse = await userService.loginUser({
+          const loginUserResponse = await userAccessService.loginUser({
             emailAddress: testUser.emailAddress as string,
             password: testUser.password as string,
             ipAddress: '127.0.0.1',

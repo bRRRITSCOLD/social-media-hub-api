@@ -22,7 +22,7 @@ import {
 } from './user.types';
 
 // services
-import { UserService } from './user.service';
+import { UserAccessService } from './user.service';
 import { AnyObject } from '../../models/any';
 
 class UserAccess {}
@@ -30,13 +30,13 @@ class UserAccess {}
 @Service({ transient: true })
 @Resolver((_of: unknown) => UserAccess)
 export class UserAccessResolver {
-  public constructor(private readonly userService: UserService) {}
+  public constructor(private readonly userAccessService: UserAccessService) {}
 
   @Mutation((_returns: unknown) => UserType)
   public async registerUser(@Arg('data') registerUserInputType: RegisterUserInputType): Promise<UserType> {
     try {
       // call service
-      const registeredUser = await this.userService.registerUser(
+      const registeredUser = await this.userAccessService.registerUser(
         _.assign({}, registerUserInputType, { userId: uuid() }),
       );
       // return the authorization link
@@ -52,7 +52,7 @@ export class UserAccessResolver {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserAccessService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw { errors: [error] };
     }
@@ -62,7 +62,7 @@ export class UserAccessResolver {
   public async loginUser(@Arg('data') loginUserInputType: LoginUserInputType): Promise<UserCredentialsType> {
     try {
       // call service
-      const userCrendtials = await this.userService.loginUser(loginUserInputType);
+      const userCrendtials = await this.userAccessService.loginUser(loginUserInputType);
       // return the authorization link
       return {
         jwt: userCrendtials.jwt as string,
@@ -72,7 +72,7 @@ export class UserAccessResolver {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserAccessService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw { errors: [error] };
     }
@@ -92,7 +92,7 @@ export class UserAccessResolver {
         refreshUserJWTInputType,
       ];
       // call service
-      const userCrendtials = await this.userService.refreshUserJWT({
+      const userCrendtials = await this.userAccessService.refreshUserJWT({
         userId: userId as string,
         jwtRefreshToken,
       });
@@ -105,7 +105,7 @@ export class UserAccessResolver {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}UserService::#refreshUserJWT::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserAccessService::#refreshUserJWT::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw { errors: [error] };
     }

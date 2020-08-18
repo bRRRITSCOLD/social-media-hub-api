@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 // libraries
-import { STANDARD_USER_ROLE } from '../../lib/authorization';
+import { STANDARD_USER_ROLE, TWITTER_USER_ROLE } from '../../lib/authorization';
 import { jwt } from '../../lib/authentication';
 import { logger } from '../../lib/logger';
 import { anyy } from '../../lib/utils';
@@ -22,11 +22,11 @@ import * as userTokenManager from '../../data-management/user-token.manager';
 import { env } from '../../lib/environment';
 
 @Service({ transient: true, global: false })
-export class UserService {
+export class UserAccessService {
   public async registerUser(user: UserInterface): Promise<User> {
     try {
       // log for debugging and run support purposes
-      logger.info('{}UserService::#registerUser::initiating execution');
+      logger.info('{}UserAccessService::#registerUser::initiating execution');
       // first create a new user instace
       const newUser = new User(_.assign({}, user));
       // validate that the data passed
@@ -58,14 +58,14 @@ export class UserService {
         putOptions: {},
       });
       // log for debugging and run support purposes
-      logger.info('{}UserService::#registerUser::successfully executed');
+      logger.info('{}UserAccessService::#registerUser::successfully executed');
       // return resulst explicitly
       return putUser;
     } catch (err) {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}UserService::#registerUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserAccessService::#registerUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
@@ -74,7 +74,7 @@ export class UserService {
   public async loginUser(loginUserReqeust: { emailAddress: string; password: string; ipAddress?: string; }): Promise<{ jwt: string | null | AnyObject; jwtRefreshToken: string; }> {
     try {
       // log for debugging and run support purposes
-      logger.info('{}UserService::#loginUser::initiating execution');
+      logger.info('{}UserAccessService::#loginUser::initiating execution');
       // deconstruct for ease
       const {
         emailAddress,
@@ -92,33 +92,25 @@ export class UserService {
         new Error(`No user found with the email address ${emailAddress}`),
         { statusCode: 404 },
       );
-      // grab a user's tokens
-      const { userTokens: existingUserTokens } = await userTokenManager.searchUserTokens({
-        searchCriteria: { userId: existingUser.userId },
-        searchOptions: { pageNumber: 1, pageSize: 1 },
-      });
       // compare a user's password
       if (!await cryptography.password.compare(password, existingUser.password)) throw new APIError(
         new Error(`Error logging in with email address ${emailAddress}`),
       );
-      // create a users roles
-      const roles: string[] = [];
-      // first based off user tokens
-      roles.push(
-        STANDARD_USER_ROLE,
-        ...existingUserTokens.reduce((userRoles: string[], existingUserToken: UserToken) => {
-          if (
-            existingUserToken.type === UserTokenTypeEnum.TWITTER
-            && existingUserToken.oAuthAccessToken
-            && existingUserToken.oAuthAccessTokenSecret
-          ) {
-            userRoles.push('Twitter User');
-          }
-          return userRoles;
-        }, []),
-      );
+      // grab a user's tokens
+      const { userTokens: existingUserTokens } = await userTokenManager.searchUserTokens({
+        searchCriteria: { userId: existingUser.userId },
+        searchOptions: { pageNumber: 1, pageSize: Number.MAX_SAFE_INTEGER },
+      });
+      // find any specific tokens
+      const [
+        [existingUserTwitterToken],
+      ] = [
+        _.filter(existingUserTokens, { type: UserTokenTypeEnum.TWITTER }),
+      ];
       // create a new jwt refresh user token
       const userJWTRefreshToken = new UserToken({
+        userId: existingUser.userId,
+        tokenId: uuid(),
         type: UserTokenTypeEnum.JWT_REFRESH,
         jwtRefreshToken: uuid(),
       });
@@ -135,12 +127,19 @@ export class UserService {
         putOptions: {},
       });
       // log for debugging and run support purposes
-      logger.info('{}UserService::#loginUser::successfully executed');
+      logger.info('{}UserAccessService::#loginUser::successfully executed');
       // return resulst explicitly
       return {
         jwt: jwt.sign({
           userId: existingUser.userId,
-          roles,
+          roles: [
+            STANDARD_USER_ROLE,
+            existingUserTwitterToken
+              ? 'Twitter User'
+              : undefined,
+          ].filter((item: any) => item !== undefined) as string [],
+          twitterScreenName: _.get(existingUserTwitterToken, 'twitterScreenName', ''),
+          twitterUserId: _.get(existingUserTwitterToken, 'twitterUserId', ''),
         }),
         jwtRefreshToken: cryptography.sign(userJWTRefreshToken.jwtRefreshToken as string, env.COOKIE_SECRET),
       };
@@ -148,7 +147,7 @@ export class UserService {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}UserService::#loginUser::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserAccessService::#loginUser::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }
@@ -157,7 +156,7 @@ export class UserService {
   public async refreshUserJWT(refreshUserJWTRequest: { userId: string; jwtRefreshToken: string; }): Promise<{ jwt: string | null | AnyObject; jwtRefreshToken: string; }> {
     try {
       // log for debugging and run support purposes
-      logger.info('{}UserService::#refreshUserJWT::initiating execution');
+      logger.info('{}UserAccessService::#refreshUserJWT::initiating execution');
       // deconstruct for ease
       const {
         userId,
@@ -177,42 +176,40 @@ export class UserService {
       // grab a user's tokens
       const { userTokens: existingUserTokens } = await userTokenManager.searchUserTokens({
         searchCriteria: { userId },
-        searchOptions: { pageNumber: 1, pageSize: 1 },
+        searchOptions: { pageNumber: 1, pageSize: Number.MAX_SAFE_INTEGER },
       });
       // get the users jwt refresh token
-      const existingUserJWTRefreshToken = _.find(existingUserTokens, { type: UserTokenTypeEnum.JWT_REFRESH });
+      const existingUserJWTRefreshTokens = _.filter(existingUserTokens, { type: UserTokenTypeEnum.JWT_REFRESH });
       // validate we found a refresh toke
-      if (!existingUserJWTRefreshToken) throw new APIError(
-        new Error(`No jwt refresh token found for user id ${userId}`),
+      if (!existingUserJWTRefreshTokens || !existingUserJWTRefreshTokens.length) throw new APIError(
+        new Error(`No jwt refresh tokens found for user id ${userId}`),
         { statusCode: 404 },
       );
-      // compare a user's password
-      if (cryptography.decrypt(
-        existingUserJWTRefreshToken.jwtRefreshToken as string,
-      ) !== cryptography.unsign(
-        jwtRefreshToken, env.COOKIE_SECRET,
-      )) throw new APIError(
+      // find the refresh token it responds to
+      const existingUserJWTRefreshToken = existingUserJWTRefreshTokens.reduce((found: UserToken | undefined, userJWTRefreshToken: UserToken) => {
+        // compare a user's password
+        if (cryptography.decrypt(
+          userJWTRefreshToken.jwtRefreshToken as string,
+        ) === cryptography.unsign(
+          jwtRefreshToken, env.COOKIE_SECRET,
+        )) found = userJWTRefreshToken;
+        return found;
+      }, undefined);
+      // validate we found the refresh token
+      if (!existingUserJWTRefreshToken) throw new APIError(
         new Error('Invalid jwt refresh token'),
         { statusCode: 409 },
       );
-      // create a users roles
-      const roles: string[] = [];
-      // first based off user tokens
-      roles.push(
-        STANDARD_USER_ROLE,
-        ...existingUserTokens.reduce((userRoles: string[], existingUserToken: UserToken) => {
-          if (
-            existingUserToken.type === UserTokenTypeEnum.TWITTER
-            && existingUserToken.oAuthAccessToken
-            && existingUserToken.oAuthAccessTokenSecret
-          ) {
-            userRoles.push('Twitter User');
-          }
-          return userRoles;
-        }, []),
-      );
+      // find any tokens you may need for things below
+      const [
+        [existingUserTwitterToken],
+      ] = [
+        _.filter(existingUserTokens, { type: UserTokenTypeEnum.TWITTER }),
+      ];
       // create a new jwt refresh user token
       const userJWTRefreshToken = new UserToken({
+        userId: existingUser.userId,
+        tokenId: existingUserJWTRefreshToken.tokenId,
         type: UserTokenTypeEnum.JWT_REFRESH,
         jwtRefreshToken: uuid(),
       });
@@ -229,12 +226,19 @@ export class UserService {
         putOptions: {},
       });
       // log for debugging and run support purposes
-      logger.info('{}UserService::#refreshUserJWT::successfully executed');
+      logger.info('{}UserAccessService::#refreshUserJWT::successfully executed');
       // return resulst explicitly
       return {
         jwt: jwt.sign({
           userId: existingUser.userId,
-          roles,
+          roles: [
+            STANDARD_USER_ROLE,
+            existingUserTwitterToken
+              ? 'Twitter User'
+              : undefined,
+          ].filter((item: any) => item !== undefined) as string [],
+          twitterScreenName: _.get(existingUserTwitterToken, 'twitterScreenName', ''),
+          twitterUserId: _.get(existingUserTwitterToken, 'twitterUserId', ''),
         }),
         jwtRefreshToken: cryptography.sign(userJWTRefreshToken.jwtRefreshToken as string, env.COOKIE_SECRET),
       };
@@ -242,7 +246,7 @@ export class UserService {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}UserService::#refreshUserJWT::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}UserAccessService::#refreshUserJWT::error executing::error=${anyy.stringify(error)}`);
       // throw error explicitly
       throw error;
     }

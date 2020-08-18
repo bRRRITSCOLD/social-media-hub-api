@@ -63,6 +63,7 @@ export class TwitterAccessService {
         existingUserToken || {},
         _.omitBy({
           userId: existingUser.userId,
+          type: UserTokenTypeEnum.TWITTER,
           oAuthRequestToken: getOAuthRequestTokensResponse.oAuthRequestToken,
           oAuthRequestTokenSecret: getOAuthRequestTokensResponse.oAuthRequestTokenSecret,
           oAuthAccessAuhthorizeUrl: `https://twitter.com/oauth/authorize?oauth_token=${getOAuthRequestTokensResponse.oAuthRequestToken}`,
@@ -91,7 +92,7 @@ export class TwitterAccessService {
           user: _.assign(
             {},
             existingUser,
-            { tokens: [..._.get(existingUser, 'tokens', []), twitterAccessRequestUserTwitterToken.tokenId] },
+            { tokens: _.uniq([..._.get(existingUser, 'tokens', []), twitterAccessRequestUserTwitterToken.tokenId]) },
           ),
           putCriteria: {},
           putOptions: {},
@@ -197,7 +198,7 @@ export class TwitterAccessService {
           user: _.assign(
             {},
             existingUser,
-            { tokens: [..._.get(existingUser, 'tokens', []), newTwitterAccessUserToken.tokenId] },
+            { tokens: _.uniq([..._.get(existingUser, 'tokens', []), newTwitterAccessUserToken.tokenId]) },
           ),
           putCriteria: {},
           putOptions: {},

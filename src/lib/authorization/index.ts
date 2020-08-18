@@ -1,6 +1,7 @@
 import { APIError } from '../../models/error';
 
 export const STANDARD_USER_ROLE = 'Standard User';
+export const TWITTER_USER_ROLE = 'Twitter User';
 
 export const authorization = {
   roles(userRoles: string[], authorizedRoles: string[]) {

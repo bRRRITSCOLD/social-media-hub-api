@@ -326,6 +326,7 @@ describe('api/service/user.resolver integration tests', () => {
             testUserTokens = staticUserTokens.slice(0, staticUserTokens.length).filter((staticUserToken: any) => staticUserToken.type === UserTokenTypeEnum.JWT_REFRESH);
             // set data for correlations
             testUserTokens[0] = _.assign(
+              {},
               testUserTokens[0],
               { userId: testUsers[0].userId },
             );
