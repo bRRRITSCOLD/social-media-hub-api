@@ -1,3 +1,4 @@
+// models
 import { APIError } from '../../models/error';
 
 export const STANDARD_USER_ROLE = 'Standard User';

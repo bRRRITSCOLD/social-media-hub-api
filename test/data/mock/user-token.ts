@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // libraries
-import { enumerations } from '../../lib/utils';
+import { testUtils } from '../../lib';
 
 // models
 import {
@@ -16,7 +16,7 @@ export class MockUserToken extends UserToken {
     const mockUserToken: UserTokenInterface = {
       tokenId: uuid(),
       userId: uuid(),
-      type: _.sample([...enumerations.enumerate(UserTokenTypeEnum)]),
+      type: _.sample([...testUtils.enumerations.enumerate(UserTokenTypeEnum)]),
       oAuthAccessToken: uuid(),
       oAuthAccessTokenSecret: uuid(),
     };

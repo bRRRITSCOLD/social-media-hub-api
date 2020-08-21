@@ -7,10 +7,10 @@ const onExit = require('signal-exit');
 
 // libraries
 import { env } from './lib/environment';
-import { oAuthConnector } from './lib/authentication';
-import { logger } from './lib/logger';
 import { mongo } from './lib/mongo';
-import { anyy } from './lib/utils';
+import { logger } from './lib/logger';
+import { utils } from './lib/utils';
+import * as authentication from './lib/authentication';
 
 // models
 import { APIError } from './models/error';
@@ -18,15 +18,13 @@ import { APIError } from './models/error';
 // app
 import { bootstrap } from './app';
 
-// import { twitter } from './lib/twitter';
-
 // certralize app exiting
 function exit(code?: number | string | boolean | any) {
   // build exit code
   const exitCode = code || 1;
   // log for debugging and POTENTIAL run purposes
-  if (exitCode === 0) logger.info(`{}App::#exit::code=${anyy.stringify(exitCode)}`);
-  else logger.error(`{}App::#exit::code=${anyy.stringify(exitCode)}`);
+  if (exitCode === 0) logger.info(`{}App::#exit::code=${utils.anyy.stringify(exitCode)}`);
+  else logger.error(`{}App::#exit::code=${utils.anyy.stringify(exitCode)}`);
   // exit process after timeout to let streams clear
   setTimeout(() => {
     process.exit(exitCode);
@@ -36,7 +34,7 @@ function exit(code?: number | string | boolean | any) {
 // catch all possible exits in app
 onExit((code: unknown, signal: unknown) => {
   // log for debugging and run support purposes
-  logger.info(`{}App::#onExit::code=${anyy.stringify(code)}::signal=${anyy.stringify(signal)}`);
+  logger.info(`{}App::#onExit::code=${utils.anyy.stringify(code)}::signal=${utils.anyy.stringify(signal)}`);
   // return explicitly
   return;
 });
@@ -45,7 +43,7 @@ process.on('uncaughtException', (err: unknown) => {
   // build error
   const error = new APIError(err);
   // log for debugging and run support purposes
-  logger.error(`{}App::uncaughtException::error=${anyy.stringify(error)}`);
+  logger.error(`{}App::uncaughtException::error=${utils.anyy.stringify(error)}`);
   // exit explicitly
   exit(1);
 });
@@ -54,7 +52,7 @@ process.on('unhandledRejection', (err: unknown) => {
   // build error
   const error = new APIError(err);
   // log for debugging and run support purposes
-  logger.error(`{}App::unhandledRejection::error=${anyy.stringify(error)}`);
+  logger.error(`{}App::unhandledRejection::error=${utils.anyy.stringify(error)}`);
   // exit explicitly
   exit(1);
 });
@@ -70,18 +68,18 @@ process.on('unhandledRejection', (err: unknown) => {
     ]);
     // initialize synchronous libraries, connectiones, etc. here
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    [oAuthConnector.init([...require('./configs/oauth').default])];
+    [authentication.oAuthConnector.init([...require('./configs/oauth').default])];
     // build app
     const app = await bootstrap();
     // start server
     const serverInfo = await app.listen(env.PORT);
     // log for debugging and run support purposes
-    logger.info(`{}App::server started::serverInfo=${anyy.stringify(serverInfo)}`);
+    logger.info(`{}App::server started::serverInfo=${utils.anyy.stringify(serverInfo)}`);
   } catch (err) {
     // build error
     const error = new APIError(err);
     // log for debugging and run support purposes
-    logger.info(`{}App::error executing::error=${anyy.stringify(error)}`);
+    logger.info(`{}App::error executing::error=${utils.anyy.stringify(error)}`);
     // exit explicitly
     exit(1);
   }

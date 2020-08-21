@@ -1,6 +1,7 @@
-import { get } from 'lodash';
 // node_modules
 import { MiddlewareFn } from 'type-graphql';
+
+// models
 import { APIError } from '../../models/error';
 
 export const ErrorInterceptor: MiddlewareFn<any> = async (params: { context: any; info: any; }, next) => {

@@ -3,10 +3,13 @@ import _ from 'lodash';
 import {
   ClientSession as MongoClientSession, Db as MongoDb, MongoClient, MongoClientOptions, MongoError,
 } from 'mongodb';
-import { inspect } from 'util';
-import { APIError } from '../../models/error';
+
+// libraries
 import { logger } from '../logger';
-import { anyy } from '../utils';
+import { utils } from '../utils';
+
+// models
+import { APIError } from '../../models/error';
 
 /**
  * This is a basic wrapper function
@@ -419,7 +422,7 @@ export class Mongo implements MongoInterface {
               // build error
               const error = new APIError(err);
               // log for debugging and run support purposes
-              logger.error(`{}App::#verifyConnection#::error closing mongo connection ${connectionName}::error=${anyy.stringify(error)}`);
+              logger.error(`{}App::#verifyConnection#::error closing mongo connection ${connectionName}::error=${utils.anyy.stringify(error)}`);
               // return explicitly
               return;
             });
@@ -427,7 +430,7 @@ export class Mongo implements MongoInterface {
             // build error
             const error = new APIError(e);
             // log for debugging and run support purposes
-            logger.error(`{}App::#verifyConnection#::error attempting to close mongo connection ${connectionName}::error=${anyy.stringify(error)}`);
+            logger.error(`{}App::#verifyConnection#::error attempting to close mongo connection ${connectionName}::error=${utils.anyy.stringify(error)}`);
             // return explicitly
             return;
           }
@@ -439,7 +442,7 @@ export class Mongo implements MongoInterface {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}App::#verifyConnection#::error executing::error=${anyy.stringify(error)}`);
+      logger.error(`{}App::#verifyConnection#::error executing::error=${utils.anyy.stringify(error)}`);
       // throw explicitly
       throw err;
     }
@@ -516,7 +519,7 @@ export class Mongo implements MongoInterface {
                 // build error
                 const error = new APIError(err);
                 // log for debugging and run support purposes
-                logger.error(`{}App::#shutdown#::error shutting down mongo connection ${this.datasources[chunkedConnectionNames[i][j]][k].config?.name}::error=${anyy.stringify(error)}`);
+                logger.error(`{}App::#shutdown#::error shutting down mongo connection ${this.datasources[chunkedConnectionNames[i][j]][k].config?.name}::error=${utils.anyy.stringify(error)}`);
                 // return explicitly - we do this
                 // because we do not want to interrupt
                 // any other shutdown flows going on

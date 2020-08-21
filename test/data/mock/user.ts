@@ -3,9 +3,6 @@ import * as faker from 'faker';
 import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
-// libraries
-import { enumerations } from '../../lib/utils';
-
 // models
 import {
   User, UserInterface,

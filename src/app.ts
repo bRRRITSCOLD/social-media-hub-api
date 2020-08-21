@@ -5,14 +5,12 @@ import { Container } from 'typedi';
 
 // libraries
 import { env } from './lib/environment';
+import { ErrorInterceptor } from './lib/middleware';
+import { logger } from './lib/logger';
+import { utils } from './lib/utils';
 
 // models
 import { APIError } from './models/error';
-
-// middleware
-import { ErrorInterceptor } from './lib/middleware/error';
-import { logger } from './lib/logger';
-import { anyy } from './lib/utils';
 
 // app
 const fastifyApp = fastify({ logger: true });
@@ -27,7 +25,7 @@ const bootstrap = async () => {
       // build error
       const error = new APIError(err);
       // log for debugging and run support purposes
-      logger.error(`{}App::#onError::error=${anyy.stringify(error)}`);
+      logger.error(`{}App::#onError::error=${utils.anyy.stringify(error)}`);
     });
     // cors
     fastifyApp.register(require('fastify-cors'), {
@@ -74,7 +72,7 @@ const bootstrap = async () => {
     // build error
     const error = new APIError(err);
     // log for debugging and run support purposes
-    logger.error(`{}App::#bootstrap::error executing::error=${anyy.stringify(error)}`);
+    logger.error(`{}App::#bootstrap::error executing::error=${utils.anyy.stringify(error)}`);
     // throw any error
     throw error;
   }

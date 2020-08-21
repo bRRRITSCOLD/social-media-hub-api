@@ -10,7 +10,7 @@ import * as fsExtra from 'fs-extra';
 
 const easyPdfMerge = promisify(require('easy-pdf-merge'));
 
-export const files = {
+const files = {
   readFile: promisify(fs.readFile),
   readFileSync: fs.readFileSync,
   writeFile: promisify(fs.writeFile),
@@ -44,8 +44,15 @@ export const files = {
   },
 };
 
-export const enumerations = {
+const enumerations = {
   enumerate(enumm: any) {
     return Object.keys(enumm).map((key: any) => enumm[key]);
   },
 };
+
+const testUtils = {
+  files,
+  enumerations,
+};
+
+export { testUtils };

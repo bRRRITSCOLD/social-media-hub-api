@@ -41,7 +41,8 @@
         "--colors",
         "--recursive",
         "--exit",
-        "${workspaceFolder}/test/unit/models/**.ts"
+        "${workspaceFolder}/test/unit/models/user/**.ts",
+        "${workspaceFolder}/test/unit/models/user-token/**.ts"
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
@@ -66,8 +67,9 @@
         "--colors",
         "--recursive",
         "--exit",
-        "${workspaceFolder}/test/integration/data-management/**.ts",
-        "${workspaceFolder}/test/integration/api/user/**.ts",
+        "${workspaceFolder}/test/integration/data-management/twitter/**.ts",
+        "${workspaceFolder}/test/integration/data-management/user/**.ts",
+        "${workspaceFolder}/test/integration/data-management/user-token/**.ts"
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
@@ -92,7 +94,8 @@
         "--colors",
         "--recursive",
         "--exit",
-        "${workspaceFolder}/test/e2e/api/user/**.ts",
+        "${workspaceFolder}/test/e2e/api/user/resolvers/**.ts",
+        "${workspaceFolder}/test/e2e/api/twitter/resolvers/**.ts",
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",

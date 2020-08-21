@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import { promisify } from 'util';
 
 // models
-import { AnyObject } from '../../models/any';
+import { AnyObject } from '../../models/common';
 
 /* libraries */
 export interface EnvironmentInterface extends AnyObject {

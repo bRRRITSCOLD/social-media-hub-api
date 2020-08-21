@@ -35,7 +35,7 @@ const keysToCamel = function (o: any) {
   return o;
 };
 
-export const anyy = {
+const anyy = {
   stringify(
     item: any,
     options: {
@@ -53,7 +53,7 @@ export const anyy = {
   },
 };
 
-export const booleans = {
+const booleans = {
   fromOther(booleanLikeValue: any): boolean {
     switch (booleanLikeValue) {
       case '1':
@@ -75,16 +75,26 @@ export const booleans = {
   },
 };
 
-export const enumerations = {
+const enumerations = {
   enumerate(enumm: any) {
     return Object.keys(enumm).map((key: any) => enumm[key]);
   },
 };
 
-export const arrays = {
+const arrays = {
   keysToCamel,
 };
 
-export const objects = {
+const objects = {
   keysToCamel,
 };
+
+const utils = {
+  anyy,
+  booleans,
+  enumerations,
+  arrays,
+  objects,
+};
+
+export { utils };
