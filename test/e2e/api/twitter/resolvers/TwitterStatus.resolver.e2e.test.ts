@@ -5,6 +5,7 @@ import { IncomingMessage, Server, ServerResponse } from 'http';
 import { expect } from 'chai';
 import * as _ from 'lodash';
 import Container from 'typedi';
+import { v4 as uuid } from 'uuid';
 
 // libraries
 import { env } from '../../../../../src/lib/environment';
@@ -28,7 +29,6 @@ let app: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerI
 
 // mock/static/cached data
 let cachedUserCredentials: { jwt: string | AnyObject | null; };
-let cachedTwitterUserToken: UserTokenInterface;
 
 // file constants/functions
 const userAccessService = Container.get<UserAccessService>(UserAccessService);
@@ -67,11 +67,6 @@ async function customStartUp() {
     if (!existingUserToken) throw new APIError(
       new Error(`Could not find twitter user token for ${testEnv.EMAIL_ADDRESS}`),
     );
-    // cache valid user twitter token to use in tests
-    cachedTwitterUserToken = _.assign(
-      {},
-      existingUserToken,
-    );
     // login the user to aquire correct jwt
     const userCredentials = await userAccessService.loginUser({
       emailAddress: testEnv.EMAIL_ADDRESS,
@@ -91,7 +86,7 @@ async function customStartUp() {
 }
 
 // tests
-describe('api/twitter/resolvers/TwitterTimeline.resolver e2e tests', () => {
+describe('api/twitter/resolvers/TwitterStatus.resolver e2e tests', () => {
   before(async () => {
     try {
       // load envs
@@ -128,7 +123,7 @@ describe('api/twitter/resolvers/TwitterTimeline.resolver e2e tests', () => {
   });
 
   describe('POST /graphql', () => {
-    describe('{ query: { twitterUserTimeline(twitterScreenName, count) { createdAt, text, source, user { name, screenName } } } }', () => {
+    describe('{ query: { mutation { twitterStatusUpdate(data: TwitterStatusUpdateInputType) } } }', () => {
       beforeEach(async () => {
         try {
           // set up
@@ -151,7 +146,7 @@ describe('api/twitter/resolvers/TwitterTimeline.resolver e2e tests', () => {
         }
       });
 
-      it('- should return a twitter user timeline that matches the given criteria', async () => {
+      it('- should post one new tweet (update a user\'s status) for a user', async () => {
         try {
           // set test data
           const userCredentials = cachedUserCredentials;
@@ -166,11 +161,8 @@ describe('api/twitter/resolvers/TwitterTimeline.resolver e2e tests', () => {
               authorization: userCredentials.jwt as string,
             },
             payload: {
-              query: `{
-                twitterUserTimeline(
-                  twitterScreenName: "${cachedTwitterUserToken.twitterScreenName}",
-                  count: 100
-                ) {
+              query: `mutation twitterStatusUpdate($data: TwitterStatusUpdateInputType!) {
+                twitterStatusUpdate(data: $data) {
                   createdAt,
                   text,
                   source,
@@ -180,152 +172,11 @@ describe('api/twitter/resolvers/TwitterTimeline.resolver e2e tests', () => {
                   }
                 }
               }`,
-            },
-          });
-          // validate results
-          expect(httResponse !== undefined).to.be.true;
-          expect(httResponse.statusCode !== undefined).to.be.true;
-          expect(httResponse.statusCode === 200).to.be.true;
-          expect(httResponse.body !== undefined).to.be.true;
-          // parse JSON body
-          const parsedBody = JSON.parse(httResponse.body);
-          // validate results
-          expect(parsedBody !== undefined).to.be.true;
-          expect(parsedBody.data !== undefined).to.be.true;
-          // return explicitly
-          return;
-        } catch (err) {
-          // throw explicitly
-          throw err;
-        }
-      });
-    });
-
-    describe('{ query: { twitterHomeTimeline(twitterScreenName, count) { createdAt, text, source, user { name, screenName } } } }', () => {
-      beforeEach(async () => {
-        try {
-          // set up
-          // none
-          // return explicitly
-        } catch (err) {
-          // throw explicitly
-          throw err;
-        }
-      });
-
-      afterEach(async () => {
-        try {
-          // set up
-          // none
-          // return explicitly
-        } catch (err) {
-          // throw explicitly
-          throw err;
-        }
-      });
-
-      it('- should return a twitter home timeline that matches the given criteria', async () => {
-        try {
-          // set test data
-          const userCredentials = cachedUserCredentials;
-          // set expectations
-          // const EXPECTED_MINIMUM_TWITTER_USER_TIMELINE_TWEETS_LENGTH: any = 1;
-          // run testee
-          const httResponse = await app.inject({
-            method: 'POST',
-            url: '/graphql',
-            headers: {
-              'content-type': 'application/json',
-              authorization: userCredentials.jwt as string,
-            },
-            payload: {
-              query: `{
-                twitterHomeTimeline(
-                  twitterScreenName: "${cachedTwitterUserToken.twitterScreenName}",
-                  count: 100
-                ) {
-                  createdAt,
-                  text,
-                  source,
-                  user {
-                    name,
-                    screenName
-                  }
-                }
-              }`,
-            },
-          });
-          // validate results
-          expect(httResponse !== undefined).to.be.true;
-          expect(httResponse.statusCode !== undefined).to.be.true;
-          expect(httResponse.statusCode === 200).to.be.true;
-          expect(httResponse.body !== undefined).to.be.true;
-          // parse JSON body
-          const parsedBody = JSON.parse(httResponse.body);
-          // validate results
-          expect(parsedBody !== undefined).to.be.true;
-          expect(parsedBody.data !== undefined).to.be.true;
-          // return explicitly
-          return;
-        } catch (err) {
-          // throw explicitly
-          throw err;
-        }
-      });
-    });
-
-    describe('{ query: { twitterMentionsTimeline(twitterScreenName, count) { createdAt, text, source, user { name, screenName } } } }', () => {
-      beforeEach(async () => {
-        try {
-          // set up
-          // none
-          // return explicitly
-        } catch (err) {
-          // throw explicitly
-          throw err;
-        }
-      });
-
-      afterEach(async () => {
-        try {
-          // set up
-          // none
-          // return explicitly
-        } catch (err) {
-          // throw explicitly
-          throw err;
-        }
-      });
-
-      it('- should return a twitter mentions timeline that matches the given criteria', async () => {
-        try {
-          // set test data
-          const userCredentials = cachedUserCredentials;
-          // set expectations
-          // const EXPECTED_MINIMUM_TWITTER_USER_TIMELINE_TWEETS_LENGTH: any = 1;
-          // run testee
-          const httResponse = await app.inject({
-            method: 'POST',
-            url: '/graphql',
-            headers: {
-              'content-type': 'application/json',
-              authorization: userCredentials.jwt as string,
-            },
-            payload: {
-              query: `{
-                twitterMentionsTimeline(
-                  twitterScreenName: "${cachedTwitterUserToken.twitterScreenName}",
-                  count: 100
-                ) {
-                  createdAt,
-                  text,
-                  source,
-                  user {
-                    name,
-                    screenName
-                  }
-                }
-              }`,
+              variables: {
+                data: {
+                  status: `Test message ${uuid()} from NodeJS`,
+                },
+              },
             },
           });
           // validate results

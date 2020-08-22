@@ -73,12 +73,8 @@ describe('models/user-token/UserToken unit tests', () => {
             expect(userToken instanceof EXPECTED_USER_TOKEN_CLASS_INSTANCE).to.be.true;
             expect(userToken.tokenId !== undefined).to.be.true;
             expect(userToken.type !== undefined).to.be.true;
-            expect(userToken.oAuthAccessToken !== undefined).to.be.true;
-            expect(userToken.oAuthAccessTokenSecret !== undefined).to.be.true;
             const foundExpectedUserToken = EXPECTED_USER_TOKEN_DATA.find((expectedUserToken: any) => expectedUserToken.tokenId === userToken.tokenId
-              && expectedUserToken.type === userToken.type
-              && expectedUserToken.oAuthAccessToken === userToken.oAuthAccessToken
-              && expectedUserToken.oAuthAccessTokenSecret === userToken.oAuthAccessTokenSecret);
+              && expectedUserToken.type === userToken.type);
             expect(foundExpectedUserToken !== undefined).to.be.true;
             return result;
           }, undefined);

@@ -18,7 +18,7 @@ import {
 import { utils } from '../../../lib/utils';
 import { logger } from '../../../lib/logger';
 import { JWTAuthorization, ScopeAuthorization } from '../../../lib/decorators';
-import * as authentication from '../../../lib/authentication';
+import { authentication } from '../../../lib';
 
 // services
 import { UserAccessService } from '../services';

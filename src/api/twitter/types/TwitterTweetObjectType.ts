@@ -5,10 +5,10 @@ import {
 
 // models
 import { TwitterTweetInterface } from '../../../models/twitter';
-import { TwitterUserType } from './TwitterUserType';
+import { TwitterUserObjectType } from './TwitterUserObjectType';
 
-@ObjectType({ description: 'Twitter Tweet Type' })
-export class TwitterTweetType implements TwitterTweetInterface {
+@ObjectType({ description: 'Twitter Tweet Object Type' })
+export class TwitterTweetObjectType implements TwitterTweetInterface {
   @Field((_type: unknown) => String, { nullable: true })
   createdAt: string;
 
@@ -42,8 +42,8 @@ export class TwitterTweetType implements TwitterTweetInterface {
   @Field((_type: unknown) => String, { nullable: true })
   inReplyToScreenName?: string | null;
 
-  @Field((_type: unknown) => TwitterUserType, { nullable: true })
-  user: TwitterUserType;
+  @Field((_type: unknown) => TwitterUserObjectType, { nullable: true })
+  user: TwitterUserObjectType;
 
   @Field((_type: unknown) => String, { nullable: true })
   geo?: string | null;

@@ -1,10 +1,16 @@
 import jsonStringifySafe from 'json-stringify-safe';
 
-const toCamel = (s: any) => {
+const snakeToCamel = (s: any) => {
   return s.replace(/([-_][a-z])/ig, ($1: any) => {
     return $1.toUpperCase()
       .replace('-', '')
       .replace('_', '');
+  });
+};
+
+const camelToSnake = (str: any) => {
+  return str.replace(/[A-Z]/g, (letter: any) => {
+    return `_${letter.toLowerCase()}`;
   });
 };
 
@@ -16,19 +22,38 @@ const isObject = function (o: any) {
   return o === Object(o) && !isArray(o) && typeof o !== 'function';
 };
 
-const keysToCamel = function (o: any) {
+const snakeKeysToCamel = function (o: any) {
   if (isObject(o)) {
     const n = {};
 
     Object.keys(o)
       .forEach((k: any) => {
-        (n as any)[toCamel(k)] = keysToCamel(o[k]);
+        (n as any)[snakeToCamel(k)] = snakeKeysToCamel(o[k]);
       });
 
     return n;
   } if (isArray(o)) {
     return o.map((i: any) => {
-      return keysToCamel(i);
+      return snakeKeysToCamel(i);
+    });
+  }
+
+  return o;
+};
+
+const camelKeysToSnake = function (o: any) {
+  if (isObject(o)) {
+    const n = {};
+
+    Object.keys(o)
+      .forEach((k: any) => {
+        (n as any)[camelToSnake(k)] = camelKeysToSnake(o[k]);
+      });
+
+    return n;
+  } if (isArray(o)) {
+    return o.map((i: any) => {
+      return camelKeysToSnake(i);
     });
   }
 
@@ -82,11 +107,15 @@ const enumerations = {
 };
 
 const arrays = {
-  keysToCamel,
+  isArray,
+  snakeKeysToCamel,
+  camelKeysToSnake,
 };
 
 const objects = {
-  keysToCamel,
+  isObject,
+  snakeKeysToCamel,
+  camelKeysToSnake,
 };
 
 const utils = {

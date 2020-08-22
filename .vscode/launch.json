@@ -93,6 +93,7 @@
         "999999",
         "--colors",
         "--recursive",
+        "--parallel=false",
         "--exit",
         "${workspaceFolder}/test/e2e/api/user/resolvers/**.ts",
         "${workspaceFolder}/test/e2e/api/twitter/resolvers/**.ts",

@@ -28,6 +28,27 @@ let staticUsers: Partial<User>[] | Partial<MockUser>[];
 
 let testUsers: Partial<User>[] | Partial<MockUser>[];
 
+async function customStartUp() {
+  try {
+    // load data for tests
+    staticUsers = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/users.json`, { encoding: 'utf-8' }));
+    // mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
+    // set env vars accordingly for tests
+    env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersIntegrationTest';
+    // get mongo connection
+    const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+    // get current collections
+    const collections = await socialMediaHubDb.collections();
+    // create test collection if not found
+    if (!collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
+      await socialMediaHubDb.createCollection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
+      // clear test collection
+    await socialMediaHubDb.collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME).deleteMany({});
+  } catch (err) {
+    throw err;
+  }
+}
+
 // tests
 describe('api/user/services/UserAccess e2e tests', () => {
   before(async () => {
@@ -38,20 +59,8 @@ describe('api/user/services/UserAccess e2e tests', () => {
       await Promise.all([
         mongo.init([...require('../../../../src/configs/datasources/mongo').default]),
       ]);
-      // load data for tests
-      staticUsers = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/users.json`, { encoding: 'utf-8' }));
-      // mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
-      // set env vars accordingly for tests
-      env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersIntegrationTest';
-      // get mongo connection
-      const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
-      // get current collections
-      const collections = await socialMediaHubDb.collections();
-      // create test collection if not found
-      if (!collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
-        await socialMediaHubDb.createCollection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
-      // clear test collection
-      await socialMediaHubDb.collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME).deleteMany({});
+      // initailize synchronous libraries, ets
+      [];
       // return explicitly
       return;
     } catch (err) {
@@ -104,7 +113,7 @@ describe('api/user/services/UserAccess e2e tests', () => {
           const EXPECTED_USER_CLASS_INSTANCE: any = User;
           const EXPECTED_USER_DATA: any = [testUser].slice(0, 1)[0];
           // run testee
-          const registerUserResponse = await userAccessService.registerUser(testUser);
+          const registerUserResponse = await userAccessService.registerUser(testUser as any);
           // validate results
           expect(registerUserResponse !== undefined).to.be.true;
           expect(registerUserResponse instanceof EXPECTED_USER_CLASS_INSTANCE).to.be.true;

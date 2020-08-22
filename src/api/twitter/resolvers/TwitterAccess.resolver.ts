@@ -19,8 +19,7 @@ import { utils } from '../../../lib/utils';
 import { logger } from '../../../lib/logger';
 import { env } from '../../../lib/environment';
 import { JWTAuthorization, ScopeAuthorization } from '../../../lib/decorators';
-import * as authentication from '../../../lib/authentication';
-import * as cryptography from '../../../lib/cryptography';
+import { authentication, cryptography } from '../../../lib';
 
 // services
 import { TwitterAccessService } from '../services';

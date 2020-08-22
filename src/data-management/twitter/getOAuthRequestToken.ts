@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import { utils } from '../../lib/utils';
 import { logger } from '../../lib/logger';
 import { env } from '../../lib/environment';
-import * as authentication from '../../lib/authentication';
+import { authentication } from '../../lib';
 
 // models
 import { APIError } from '../../models/error';

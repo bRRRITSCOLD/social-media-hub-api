@@ -45,22 +45,25 @@ export async function getHomeTimeline(getHomeTimelineRequest: GetHomeTimelineReq
       access_token_key: oAuthAccessToken, // from your User (oauth_token)
       access_token_secret: oAuthAccessTokenSecret, // from your User (oauth_token_secret)
     });
-    // call to get a users personal timeline
-    const tweets = await twitterClient.get('statuses/home_timeline', _.omitBy({
-      user_id: userId,
-      screen_name: screenName,
-      since_id: sinceId,
-      max_id: maxId,
+    // create the request that we will
+    // send to twitter - convert camel
+    // keys to snake keys
+    const snakeCaseRequest = utils.objects.camelKeysToSnake(_.omitBy({
+      userId,
+      screenName,
+      sinceId,
+      maxId,
       count,
-      trim_user: trimUser,
-      exclude_replies: excludeReplies,
-      include_rts: includeRts,
+      trimUser,
+      excludeReplies,
+      includeRts,
     }, _.isUndefined));
-    // console.log(`Rate: ${tweets._headers.get('x-rate-limit-remaining')} / ${tweets._headers.get('x-rate-limit-limit')}`);
-    // const delta = (tweets._headers.get('x-rate-limit-reset') * 1000) - Date.now();
-    // console.log(`Reset: ${Math.ceil(delta / 1000 / 60)} minutes`);
+    // call to get a users personal timeline
+    const twitterClientResponse = await twitterClient.get('statuses/home_timeline', snakeCaseRequest);
+    // map response from snake keys to came keys
+    const camelCaseResponse = utils.arrays.snakeKeysToCamel(twitterClientResponse);
     // return explcitly
-    return tweets;
+    return camelCaseResponse;
   } catch (err) {
     // build error
     const error = new APIError(err);

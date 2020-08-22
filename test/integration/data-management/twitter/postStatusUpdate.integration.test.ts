@@ -2,22 +2,23 @@
 // node_modules
 import { expect } from 'chai';
 import * as _ from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 // libraries
+import { testEnv } from '../../../lib';
 import { env } from '../../../../src/lib/environment';
 import { mongo } from '../../../../src/lib/mongo';
 import * as authentication from '../../../../src/lib/authentication';
 import * as cryptography from '../../../../src/lib/cryptography';
-import { testEnv } from '../../../lib';
 
 // models
-import { UserTokenInterface, UserTokenTypeEnum } from '../../../../src/models/user-token';
-import { APIError } from '../../../../src/models/error';
 
 // testees
 import * as twitterManager from '../../../../src/data-management/twitter';
 
-// mock/static/cached data
+// mock/static data
+import { APIError, UserTokenInterface, UserTokenTypeEnum } from '../../../../src/models';
+
 let cachedTwitterUserToken: UserTokenInterface;
 
 // file constants/functions
@@ -69,7 +70,7 @@ async function customStartUp() {
 }
 
 // tests
-describe('data-management/twitter integration tests', () => {
+describe('data-management/twitter/postStatusUpdate integration tests', () => {
   before(async () => {
     try {
       // load envs
@@ -104,55 +105,50 @@ describe('data-management/twitter integration tests', () => {
       throw err;
     }
   });
-
-  describe('#getUserTimeline', () => {
-    context('{ oAuthAccessToken, oAuthAccessTokenSecret, screenName, count }', () => {
-      beforeEach(async () => {
-        try {
-          // search and make sure that we have a user token
-          // with type o TWITTER, an oAuthAccessToken and a oAuthAccessTokenSecret
-          // return explicitly
-          return;
-        } catch (err) {
-        // throw explicitly
-          throw err;
-        }
-      });
-
-      afterEach(async () => {
-        try {
+  context('{ oAuthAccessToken, oAuthAccessTokenSecret, status }', () => {
+    beforeEach(async () => {
+      try {
+        // search and make sure that we have a user token
+        // with type o TWITTER, an oAuthAccessToken and a oAuthAccessTokenSecret
         // return explicitly
-        } catch (err) {
-        // throw explicitly
-          throw err;
-        }
-      });
+        return;
+      } catch (err) {
+      // throw explicitly
+        throw err;
+      }
+    });
 
-      it("- should get a user's twitter timeline (a user's perosnal tweets) that matches a given criteria", async () => {
-        try {
-          // run testee
-          const getUserTimelineResponse = await twitterManager.getUserTimeline({
-            oAuthAccessToken: cryptography.decrypt(cachedTwitterUserToken.oAuthAccessToken as string),
-            oAuthAccessTokenSecret: cryptography.decrypt(cachedTwitterUserToken.oAuthAccessTokenSecret as string),
-            screenName: cachedTwitterUserToken.twitterScreenName,
-            count: 50,
-          });
-          // validate results
-          expect(getUserTimelineResponse !== undefined).to.be.true;
-          // return explicitly
-          return;
-        } catch (err) {
-        // throw explicitly
-          throw err;
-        }
-      });
+    afterEach(async () => {
+      try {
+      // return explicitly
+      } catch (err) {
+      // throw explicitly
+        throw err;
+      }
+    });
+
+    it("- should post one new tweet (update a user's status) for a user", async () => {
+      try {
+        // run testee
+        const getMentionsTimelineResponse = await twitterManager.postStatusUpdate({
+          oAuthAccessToken: cryptography.decrypt(cachedTwitterUserToken.oAuthAccessToken as string),
+          oAuthAccessTokenSecret: cryptography.decrypt(cachedTwitterUserToken.oAuthAccessTokenSecret as string),
+          status: `Test message ${uuid()} from NodeJS`,
+        });
+        // validate results
+        expect(getMentionsTimelineResponse !== undefined).to.be.true;
+        // return explicitly
+        return;
+      } catch (err) {
+      // throw explicitly
+        throw err;
+      }
     });
   });
 
   after(async () => {
     try {
       // return explicitly
-      return;
     } catch (err) {
       // throw explicitly
       throw err;

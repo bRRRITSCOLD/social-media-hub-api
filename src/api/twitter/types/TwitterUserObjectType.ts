@@ -4,8 +4,8 @@ import {
 } from 'type-graphql';
 import { TwitterUserInterface } from '../../../models/twitter';
 
-@ObjectType({ description: 'Twitter User Type' })
-export class TwitterUserType implements TwitterUserInterface {
+@ObjectType({ description: 'Twitter User Object Type' })
+export class TwitterUserObjectType implements TwitterUserInterface {
   @Field((_type: unknown) => Number, { nullable: true })
   id: number;
 

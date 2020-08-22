@@ -7,9 +7,8 @@ import { v4 as uuid } from 'uuid';
 import { utils } from '../../../lib/utils';
 import { logger } from '../../../lib/logger';
 import { env } from '../../../lib/environment';
-import * as authentication from '../../../lib/authentication';
 import { STANDARD_USER_ROLE, TWITTER_USER_ROLE } from '../../../lib/authorization';
-import * as cryptography from '../../../lib/cryptography';
+import { authentication, cryptography } from '../../../lib';
 
 // models
 import { APIError } from '../../../models/error';

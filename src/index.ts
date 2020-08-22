@@ -10,7 +10,7 @@ import { env } from './lib/environment';
 import { mongo } from './lib/mongo';
 import { logger } from './lib/logger';
 import { utils } from './lib/utils';
-import * as authentication from './lib/authentication';
+import { authentication } from './lib';
 
 // models
 import { APIError } from './models/error';
@@ -79,7 +79,7 @@ process.on('unhandledRejection', (err: unknown) => {
     // build error
     const error = new APIError(err);
     // log for debugging and run support purposes
-    logger.info(`{}App::error executing::error=${utils.anyy.stringify(error)}`);
+    logger.error(`{}App::error executing::error=${utils.anyy.stringify(error)}`);
     // exit explicitly
     exit(1);
   }

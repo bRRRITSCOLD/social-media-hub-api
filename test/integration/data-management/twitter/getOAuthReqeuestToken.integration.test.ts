@@ -28,7 +28,7 @@ async function customStartUp() {
 }
 
 // tests
-describe('data-management/twitter.manager integration tests', () => {
+describe('data-management/twitter integration tests', () => {
   before(async () => {
     try {
       // load envs
