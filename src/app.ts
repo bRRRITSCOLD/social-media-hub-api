@@ -1,4 +1,5 @@
 // node_modules
+import 'reflect-metadata';
 import fastify from 'fastify';
 import { buildSchema } from 'type-graphql';
 import { Container } from 'typedi';

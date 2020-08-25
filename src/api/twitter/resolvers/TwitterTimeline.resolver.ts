@@ -48,10 +48,10 @@ export class TwitterTimelineResolver {
     try {
       // create params here for ease
       const [
-        { userId },
+        { userId: jwtUserId },
         {
-          twitterUserId,
-          twitterScreenName,
+          userId,
+          screenName,
           sinceId,
           maxId,
           count,
@@ -68,9 +68,9 @@ export class TwitterTimelineResolver {
       // matches the given
       // criteria
       const response = await this.twitterTimelineService.userTimeline({
+        jwtUserId,
         userId,
-        twitterUserId,
-        twitterScreenName,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -104,10 +104,10 @@ export class TwitterTimelineResolver {
     try {
       // create params here for ease
       const [
-        { userId },
+        { userId: jwtUserId },
         {
-          twitterUserId,
-          twitterScreenName,
+          userId,
+          screenName,
           sinceId,
           maxId,
           count,
@@ -124,9 +124,9 @@ export class TwitterTimelineResolver {
       // matches the given
       // criteria
       const response = await this.twitterTimelineService.homeTimeline({
+        jwtUserId,
         userId,
-        twitterUserId,
-        twitterScreenName,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -160,10 +160,10 @@ export class TwitterTimelineResolver {
     try {
       // create params here for ease
       const [
-        { userId },
+        { userId: jwtUserId },
         {
-          twitterUserId,
-          twitterScreenName,
+          userId,
+          screenName,
           sinceId,
           maxId,
           count,
@@ -179,10 +179,10 @@ export class TwitterTimelineResolver {
       // a user timeline that
       // matches the given
       // criteria
-      const response = await this.twitterTimelineService.homeTimeline({
+      const response = await this.twitterTimelineService.mentionsTimeline({
+        jwtUserId,
         userId,
-        twitterUserId,
-        twitterScreenName,
+        screenName,
         sinceId,
         maxId,
         count,

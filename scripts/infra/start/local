@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+printf "starting local infra"
+sudo docker-compose --file=./docker/docker-compose.local.yml up -d
+printf "started local infra"

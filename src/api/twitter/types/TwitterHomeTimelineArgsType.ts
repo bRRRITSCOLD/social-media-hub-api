@@ -7,10 +7,10 @@ import {
 @ArgsType()
 export class TwitterHomeTimelineArgsType {
   @Field((_type: unknown) => String, { nullable: true })
-  twitterUserId?: string;
+  userId?: string;
 
   @Field((_type: unknown) => String, { nullable: true })
-  twitterScreenName?: string;
+  screenName?: string;
 
   @Field((_type: unknown) => String, { nullable: true })
   sinceId?: string;

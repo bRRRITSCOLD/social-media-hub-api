@@ -20,9 +20,9 @@ import * as twitterManager from '../../../data-management/twitter';
 export class TwitterTimelineService {
   public async userTimeline(
     data: {
-      userId: string;
-      twitterUserId?: string;
-      twitterScreenName?: string;
+      jwtUserId: string;
+      userId?: string;
+      screenName?: string;
       sinceId?: string;
       maxId?: string;
       count?: number;
@@ -36,9 +36,9 @@ export class TwitterTimelineService {
       logger.info('{}TwitterService::#userTimeline::initiating execution');
       // deconstruct for ease
       const {
+        jwtUserId,
         userId,
-        twitterUserId,
-        twitterScreenName,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -53,7 +53,7 @@ export class TwitterTimelineService {
         { userTokens: [existingUserToken] },
       ] = await Promise.all([
         userManager.searchUsers({
-          searchCriteria: { userId },
+          searchCriteria: { userId: jwtUserId },
           searchOptions: {
             pageNumber: 1,
             pageSize: Number.MAX_SAFE_INTEGER,
@@ -61,7 +61,7 @@ export class TwitterTimelineService {
         }),
         userTokenManager.searchUserTokens({
           searchCriteria: {
-            userId,
+            userId: jwtUserId,
             type: UserTokenTypeEnum.TWITTER,
           },
           searchOptions: {
@@ -85,8 +85,8 @@ export class TwitterTimelineService {
       const getUserTimelineResponse = await twitterManager.getUserTimeline({
         oAuthAccessToken: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessToken', '')),
         oAuthAccessTokenSecret: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessTokenSecret', '')),
-        userId: twitterUserId,
-        screenName: twitterScreenName,
+        userId,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -110,9 +110,9 @@ export class TwitterTimelineService {
 
   public async homeTimeline(
     data: {
-      userId: string;
-      twitterUserId?: string;
-      twitterScreenName?: string;
+      jwtUserId: string;
+      userId?: string;
+      screenName?: string;
       sinceId?: string;
       maxId?: string;
       count?: number;
@@ -126,9 +126,9 @@ export class TwitterTimelineService {
       logger.info('{}TwitterService::#homeTimeline::initiating execution');
       // deconstruct for ease
       const {
+        jwtUserId,
         userId,
-        twitterUserId,
-        twitterScreenName,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -143,7 +143,7 @@ export class TwitterTimelineService {
         { userTokens: [existingUserToken] },
       ] = await Promise.all([
         userManager.searchUsers({
-          searchCriteria: { userId },
+          searchCriteria: { userId: jwtUserId },
           searchOptions: {
             pageNumber: 1,
             pageSize: Number.MAX_SAFE_INTEGER,
@@ -151,7 +151,7 @@ export class TwitterTimelineService {
         }),
         userTokenManager.searchUserTokens({
           searchCriteria: {
-            userId,
+            userId: jwtUserId,
             type: UserTokenTypeEnum.TWITTER,
           },
           searchOptions: {
@@ -175,8 +175,8 @@ export class TwitterTimelineService {
       const getHomeTimelineResponse = await twitterManager.getHomeTimeline({
         oAuthAccessToken: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessToken', '')),
         oAuthAccessTokenSecret: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessTokenSecret', '')),
-        userId: twitterUserId,
-        screenName: twitterScreenName,
+        userId,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -200,9 +200,9 @@ export class TwitterTimelineService {
 
   public async mentionsTimeline(
     data: {
-      userId: string;
-      twitterUserId?: string;
-      twitterScreenName?: string;
+      jwtUserId: string;
+      userId?: string;
+      screenName?: string;
       sinceId?: string;
       maxId?: string;
       count?: number;
@@ -216,9 +216,9 @@ export class TwitterTimelineService {
       logger.info('{}TwitterService::#mentionsTimeline::initiating execution');
       // deconstruct for ease
       const {
+        jwtUserId,
         userId,
-        twitterUserId,
-        twitterScreenName,
+        screenName,
         sinceId,
         maxId,
         count,
@@ -233,7 +233,7 @@ export class TwitterTimelineService {
         { userTokens: [existingUserToken] },
       ] = await Promise.all([
         userManager.searchUsers({
-          searchCriteria: { userId },
+          searchCriteria: { userId: jwtUserId },
           searchOptions: {
             pageNumber: 1,
             pageSize: Number.MAX_SAFE_INTEGER,
@@ -241,7 +241,7 @@ export class TwitterTimelineService {
         }),
         userTokenManager.searchUserTokens({
           searchCriteria: {
-            userId,
+            userId: jwtUserId,
             type: UserTokenTypeEnum.TWITTER,
           },
           searchOptions: {
@@ -265,8 +265,8 @@ export class TwitterTimelineService {
       const getMentionsTimelineResponse = await twitterManager.getMentionsTimeline({
         oAuthAccessToken: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessToken', '')),
         oAuthAccessTokenSecret: cryptography.decrypt(_.get(existingUserToken, 'oAuthAccessTokenSecret', '')),
-        userId: twitterUserId,
-        screenName: twitterScreenName,
+        userId,
+        screenName,
         sinceId,
         maxId,
         count,

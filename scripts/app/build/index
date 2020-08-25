@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+printf "\n"
+printf "\n"
+printf "\n"
+printf "INITIATING ATTEMPT TO BUILD APPLICATION"
+printf "\n"
+printf "\n"
+printf "\n"
+
+printf "IMPLEMENT GULP"
+
+printf "\n"
+printf "\n"
+printf "\n"
+printf "SUCCESSFULLY ATTEMPTED TO BUILD APPLICATION"
+printf "\n"
+printf "\n"
+printf "\n"
