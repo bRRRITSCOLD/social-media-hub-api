@@ -1,10 +1,10 @@
 import * as AWS from 'aws-sdk';
 import * as _ from 'lodash';
 
-export class CloudWatchEvents {
-  public client!: AWS.CloudWatchEvents;
+export class DocumentClient {
+  public client!: AWS.DynamoDB.DocumentClient;
 
-  public init(config: AWS.CloudWatchEvents.Types.ClientConfiguration = {}) {
+  public init(config: AWS.DynamoDB.DocumentClient.DocumentClientOptions & AWS.DynamoDB.Types.ClientConfiguration = {}) {
     // deconstruct for ease
     const {
       credentials,
@@ -12,7 +12,7 @@ export class CloudWatchEvents {
       endpoint,
     } = config;
     // create and store client
-    this.client = new AWS.CloudWatchEvents(_.omitBy({
+    this.client = new AWS.DynamoDB.DocumentClient(_.omitBy({
       ...config,
       credentials,
       region,
