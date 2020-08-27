@@ -1,0 +1,14 @@
+[
+  {
+    "name": "testCloudWatchEventRule",
+    "scheduleExpression": "rate(2 minutes)",
+    "state": "ENABLED",
+    "description": "Test Cloud Watch Event Rule",
+    "tags": [
+      {
+        "key": "test",
+        "value": "tag"
+      }
+    ]
+  }
+]

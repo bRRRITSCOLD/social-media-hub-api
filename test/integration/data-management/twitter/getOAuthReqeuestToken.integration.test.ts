@@ -4,8 +4,7 @@ import { expect } from 'chai';
 import * as _ from 'lodash';
 
 // libraries
-import { testEnv } from '../../../lib';
-import { env } from '../../../../src/lib/environment';
+import { integrationTwitterTestEnv } from '../../../lib';
 import { mongo } from '../../../../src/lib/mongo';
 import * as authentication from '../../../../src/lib/authentication';
 
@@ -31,23 +30,11 @@ async function customStartUp() {
 describe('data-management/twitter integration tests', () => {
   before(async () => {
     try {
-      // load envs
-      await Promise.all([
-        env.init({
-          ...require('../../../../src/configs/environment').default,
-          options: {
-            path: './.env',
-            example: './.env.example',
-          },
-        }),
-        testEnv.init({
-          ...require('../../../../src/configs/environment').default,
-          options: {
-            path: './.env.test',
-            example: './.env.test.example',
-          },
-        }),
-      ]);
+      // load envs - do this sequentially
+      // to get the right values set - since
+      // we need a real user to run twitter tests
+      // run "real" env last to set "real" env vars
+      await integrationTwitterTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
         mongo.init([...require('../../../../src/configs/datasources/mongo').default]),

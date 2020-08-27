@@ -48,7 +48,7 @@ export async function getUserTimeline(getUserTimelineRequest: GetUserTimelineReq
     // create the request that we will
     // send to twitter - convert camel
     // keys to snake keys
-    const snakeCaseRequest = utils.objects.camelKeysToSnake(_.omitBy({
+    const snakeCaseRequest = utils.objects.snakeCaseKeys(_.omitBy({
       userId,
       screenName,
       sinceId,
@@ -61,14 +61,12 @@ export async function getUserTimeline(getUserTimelineRequest: GetUserTimelineReq
     // call to get a users personal timeline
     const twitterClientResponse = await twitterClient.get('statuses/user_timeline', snakeCaseRequest);
     // map response from snake keys to came keys
-    const camelCaseResponse = utils.arrays.snakeKeysToCamel(twitterClientResponse);
+    const camelCaseResponse = utils.arrays.camelCaseKeys(twitterClientResponse);
     // return explcitly
     return camelCaseResponse;
   } catch (err) {
     // build error
     const error = new APIError(err);
-    // log for debugging and run support purposes
-    logger.info(`{}TwitterManager::#getUserTimeline::error executing::error=${utils.anyy.stringify(error)}`);
     // throw error explicitly
     throw error;
   }

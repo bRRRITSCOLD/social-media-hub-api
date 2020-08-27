@@ -61,8 +61,6 @@ export async function getOAuthRequestToken(): Promise<GetOAuthRequestTokenRespon
   } catch (err) {
     // build error
     const error = new APIError(err);
-    // log for debugging and run support purposes
-    logger.info(`{}TwitterManager::#getOAuthRequestToken::error executing::error=${utils.anyy.stringify(error)}`);
     // throw error explicitly
     throw error;
   }

@@ -1,17 +1,18 @@
 import jsonStringifySafe from 'json-stringify-safe';
+import { promisify } from 'util';
+import * as fs from 'fs';
+import * as _ from 'lodash';
 
-const snakeToCamel = (s: any) => {
-  return s.replace(/([-_][a-z])/ig, ($1: any) => {
-    return $1.toUpperCase()
-      .replace('-', '')
-      .replace('_', '');
-  });
+const toCamelCase = (str: any) => {
+  return _.camelCase(str);
 };
 
-const camelToSnake = (str: any) => {
-  return str.replace(/[A-Z]/g, (letter: any) => {
-    return `_${letter.toLowerCase()}`;
-  });
+const toSnakeCase = (str: any) => {
+  return _.snakeCase(str);
+};
+
+const toPascalCase = (str: any) => {
+  return _.upperFirst(_.camelCase(str));
 };
 
 const isArray = function (a: any) {
@@ -22,42 +23,65 @@ const isObject = function (o: any) {
   return o === Object(o) && !isArray(o) && typeof o !== 'function';
 };
 
-const snakeKeysToCamel = function (o: any) {
+const camelCaseKeys = function (o: any) {
   if (isObject(o)) {
     const n = {};
 
     Object.keys(o)
       .forEach((k: any) => {
-        (n as any)[snakeToCamel(k)] = snakeKeysToCamel(o[k]);
+        (n as any)[toCamelCase(k)] = camelCaseKeys(o[k]);
       });
 
     return n;
   } if (isArray(o)) {
     return o.map((i: any) => {
-      return snakeKeysToCamel(i);
+      return camelCaseKeys(i);
     });
   }
 
   return o;
 };
 
-const camelKeysToSnake = function (o: any) {
+const snakeCaseKeys = function (o: any) {
   if (isObject(o)) {
     const n = {};
 
     Object.keys(o)
       .forEach((k: any) => {
-        (n as any)[camelToSnake(k)] = camelKeysToSnake(o[k]);
+        (n as any)[toSnakeCase(k)] = snakeCaseKeys(o[k]);
       });
 
     return n;
   } if (isArray(o)) {
     return o.map((i: any) => {
-      return camelKeysToSnake(i);
+      return snakeCaseKeys(i);
     });
   }
 
   return o;
+};
+
+const pascalCaseKeys = function (o: any) {
+  if (isObject(o)) {
+    const n = {};
+
+    Object.keys(o)
+      .forEach((k: any) => {
+        (n as any)[toPascalCase(k)] = pascalCaseKeys(o[k]);
+      });
+
+    return n;
+  } if (isArray(o)) {
+    return o.map((i: any) => {
+      return pascalCaseKeys(i);
+    });
+  }
+
+  return o;
+};
+
+const files = {
+  readFile: promisify(fs.readFile),
 };
 
 const anyy = {
@@ -108,14 +132,16 @@ const enumerations = {
 
 const arrays = {
   isArray,
-  snakeKeysToCamel,
-  camelKeysToSnake,
+  camelCaseKeys,
+  snakeCaseKeys,
+  pascalCaseKeys,
 };
 
 const objects = {
   isObject,
-  snakeKeysToCamel,
-  camelKeysToSnake,
+  camelCaseKeys,
+  snakeCaseKeys,
+  pascalCaseKeys,
 };
 
 const utils = {
@@ -124,6 +150,7 @@ const utils = {
   enumerations,
   arrays,
   objects,
+  files,
 };
 
 export { utils };

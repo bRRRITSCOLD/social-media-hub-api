@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 printf "starting local infra"
-sudo docker-compose --file=./docker/docker-compose.local.yml up -d
+sudo TMPDIR=/private$TMPDIR docker-compose --file=./docker/docker-compose.local.yml up
 printf "started local infra"
