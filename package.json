@@ -24,7 +24,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@pulumi/pulumi": "^2.9.0",
+    "@aws-cdk/aws-apigateway": "^1.60.0",
+    "@aws-cdk/aws-dynamodb": "^1.60.0",
+    "@aws-cdk/aws-kms": "^1.60.0",
+    "@aws-cdk/aws-lambda": "^1.60.0",
+    "@aws-cdk/core": "^1.60.0",
     "@types/chai": "^4.2.12",
     "@types/dotenv-safe": "^8.1.0",
     "@types/faker": "^4.1.12",
@@ -68,10 +72,8 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
-    "@hapi/joi": "^17.1.1",
     "@types/bcrypt": "^3.0.0",
-    "@types/node": "^14.0.24",
-    "@types/twit": "^2.2.25",
+    "@types/node": "^14.6.0",
     "aws-sdk": "^2.739.0",
     "bcrypt": "^5.0.0",
     "class-validator": "^0.12.2",
