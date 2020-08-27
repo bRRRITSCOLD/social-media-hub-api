@@ -4,8 +4,7 @@ import { expect } from 'chai';
 import * as _ from 'lodash';
 
 // libraries
-import { testUtils } from '../../../lib';
-import { env } from '../../../../src/lib/environment';
+import { testUtils, integrationTestEnv } from '../../../lib';
 import { mongo } from '../../../../src/lib/mongo';
 
 // models
@@ -26,7 +25,7 @@ describe('data-management/user-token/searchUserTokens integration tests', () => 
   before(async () => {
     try {
       // load env
-      await env.init({ ...require('../../../../src/configs/environment').default });
+      await integrationTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
         mongo.init([...require('../../../../src/configs/datasources/mongo').default]),
@@ -34,17 +33,15 @@ describe('data-management/user-token/searchUserTokens integration tests', () => 
       // load data for tests
       staticUserTokens = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/user-tokens.json`, { encoding: 'utf-8' }));
       // mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
-      // set env vars accordingly for tests
-      env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME = 'userTokenssIntegrationTest';
       // get mongo connection
-      const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+      const socialMediaHubDb = await mongo.getConnection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
       // get current collections
       const collections = await socialMediaHubDb.collections();
       // create test collection if not found
-      if (!collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
-        await socialMediaHubDb.createCollection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
+      if (!collections.find((collection) => collection.collectionName === integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
+        await socialMediaHubDb.createCollection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
       // clear test collection
-      await socialMediaHubDb.collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME).deleteMany({});
+      await socialMediaHubDb.collection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME).deleteMany({});
       // return explicitly
       return;
     } catch (err) {
@@ -62,10 +59,10 @@ describe('data-management/user-token/searchUserTokens integration tests', () => 
             ...staticUserToken,
           }));
           // get mongo connection
-          const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+          const socialMediaHubDb = await mongo.getConnection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
           // seed data
           await socialMediaHubDb
-            .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
+            .collection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
             .insertMany(testUserTokens);
           // return explicitly
         } catch (err) {
@@ -77,10 +74,10 @@ describe('data-management/user-token/searchUserTokens integration tests', () => 
       afterEach(async () => {
         try {
           // teardown
-          const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+          const socialMediaHubDb = await mongo.getConnection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
           // clear data
           await socialMediaHubDb
-            .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
+            .collection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
             .deleteMany({});
           // reset test data
           testUserTokens = [];
@@ -130,12 +127,12 @@ describe('data-management/user-token/searchUserTokens integration tests', () => 
   after(async () => {
     try {
       // get mongo connection
-      const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+      const socialMediaHubDb = await mongo.getConnection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
       // get current collections
       const collections = await socialMediaHubDb.collections();
       // drop test collection if found
-      if (collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
-        await socialMediaHubDb.dropCollection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
+      if (collections.find((collection) => collection.collectionName === integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
+        await socialMediaHubDb.dropCollection(integrationTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
       // return explicitly
     } catch (err) {
       // throw explicitly

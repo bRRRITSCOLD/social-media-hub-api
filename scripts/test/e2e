@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 printf "starting e2e tests"
-NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/services/**.ts
 NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/user/services/**.ts
 NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/user/resolvers/UserAccess.resolver.e2e.test.ts
 NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/resolvers/TwitterAccess.resolver.e2e.test.ts
 NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/resolvers/TwitterStatus.resolver.e2e.test.ts
 NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/resolvers/TwitterTimeline.resolver.e2e.test.ts
+NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/services/TwitterAccess.service.e2e.test.ts
+NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/services/TwitterStatus.service.e2e.test.ts
+NODE_ENV=LOCAL node_modules/mocha/bin/_mocha --require ts-node/register -u bdd --timeout 999999 --colors --recursive --exit test/e2e/api/twitter/services/TwitterTimeline.service.e2e.test.ts
 printf "finished e2e tests"

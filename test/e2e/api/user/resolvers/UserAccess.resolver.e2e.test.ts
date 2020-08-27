@@ -8,7 +8,7 @@ import { FastifyInstance, FastifyLoggerInstance } from 'fastify';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 
 // libraries
-import { testUtils } from '../../../../lib';
+import { e2eTestEnv, testUtils } from '../../../../lib';
 import { env } from '../../../../../src/lib/environment';
 import { mongo } from '../../../../../src/lib/mongo';
 import * as authentication from '../../../../../src/lib/authentication';
@@ -42,22 +42,20 @@ async function customStartUp() {
     // mockUsers = Array.from({ length: 10 }).map(() => new MockUser());
     staticUserTokens = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/user-tokens.json`, { encoding: 'utf-8' }));
     // set env vars accordingly for tests
-    env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersE2eTest';
-    env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME = 'userTokensE2eTest';
+    e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME = 'usersE2eTest';
+    e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME = 'userTokensE2eTest';
     // get mongo connection
-    const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+    const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
     // get current collections
     const collections = await socialMediaHubDb.collections();
     // create test collection if not found
-    if (!collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
-      await socialMediaHubDb.createCollection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
-    if (!collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
-      await socialMediaHubDb.createCollection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
+    if (!collections.find((collection) => collection.collectionName === e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
+      await socialMediaHubDb.createCollection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
+    if (!collections.find((collection) => collection.collectionName === e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
+      await socialMediaHubDb.createCollection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
       // clear test collection
-    await socialMediaHubDb.collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME).deleteMany({});
-    await socialMediaHubDb.collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME).deleteMany({});
-    // create and store app
-    app = await bootstrap();
+    await socialMediaHubDb.collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME).deleteMany({});
+    await socialMediaHubDb.collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME).deleteMany({});
     // return explicitly
     return;
   } catch (e) {
@@ -70,15 +68,19 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
   before(async () => {
     try {
       // load env
-      await Promise.all([
-        await env.init({ ...require('../../../../../src/configs/environment').default }),
-      ]);
+      // load envs - do this sequentially
+      // to get the right values set - since
+      // we need a real user to run twitter tests
+      // run "real" env last to set "real" env vars
+      await e2eTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
         mongo.init([...require('../../../../../src/configs/datasources/mongo').default]),
       ]);
       // synchronous start up init tasks
       [];
+      // create and store app
+      app = await bootstrap();
       // run custom start up tasks
       await customStartUp();
       // return explicitly
@@ -97,10 +99,10 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
             // create test data
             testUsers = staticUsers.slice(0, staticUsers.length);
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // clear data
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .deleteMany({});
             // return explicitly
           } catch (err) {
@@ -114,10 +116,10 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
             // reset test data
             testUsers = [];
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // clear data
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .deleteMany({});
             // return explicitly
           } catch (err) {
@@ -181,10 +183,10 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
             expect(parsedBody.data.registerUser.password !== undefined).to.be.true;
             expect(parsedBody.data.registerUser.password === null).to.be.true;
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // search for it in back end
             const [foundUser] = await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .find({ emailAddress: EXPECTED_USER_DATA.emailAddress })
               .toArray();
             // validate results
@@ -216,16 +218,16 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
             // create test data
             testUsers = staticUsers.slice(0, staticUsers.length);
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // clear data
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .deleteMany({});
             // seed data
             await (async () => {
               const saltRounds = await cryptography.password.genSalt();
               await socialMediaHubDb
-                .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+                .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
                 .insertMany(await Promise.all(testUsers.map(async (testUser: Partial<User>) =>
                   _.assign({}, testUser, { password: await cryptography.password.hash(testUser.password, saltRounds) }))));
             })();
@@ -241,10 +243,10 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
             // reset test data
             testUsers = [];
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // clear data
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .deleteMany({});
             // return explicitly
           } catch (err) {
@@ -334,19 +336,19 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
               { userId: testUsers[0].userId },
             );
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // clear data
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .deleteMany({});
             // seed data
             const saltRounds = await cryptography.password.genSalt();
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .insertMany(await Promise.all(testUsers.map(async (testUser: Partial<User>) =>
                 _.assign({}, testUser, { password: await cryptography.password.hash(testUser.password, saltRounds) }))));
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
               .insertMany(await Promise.all(testUserTokens.map(async (testUserToken: Partial<UserToken>) =>
                 _.assign({}, testUserToken, { jwtRefreshToken: cryptography.encrypt(testUserToken.jwtRefreshToken as string) }))));
             // return explicitly
@@ -361,13 +363,13 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
             // reset test data
             testUsers = [];
             // get mongo connection
-            const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+            const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
             // clear data
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
               .deleteMany({});
             await socialMediaHubDb
-              .collection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
+              .collection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME)
               .deleteMany({});
             // return explicitly
           } catch (err) {
@@ -403,7 +405,7 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
                 }`,
                 variables: {
                   data: {
-                    jwtRefreshToken: cryptography.sign(testUserToken.jwtRefreshToken as string, env.COOKIE_SECRET),
+                    jwtRefreshToken: cryptography.sign(testUserToken.jwtRefreshToken as string, e2eTestEnv.COOKIE_SECRET),
                   },
                 },
               },
@@ -437,14 +439,14 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
   after(async () => {
     try {
       // get mongo connection
-      const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+      const socialMediaHubDb = await mongo.getConnection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
       // get current collections
       const collections = await socialMediaHubDb.collections();
       // drop test collection if found
-      if (collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
-        await socialMediaHubDb.dropCollection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
-      if (collections.find((collection) => collection.collectionName === env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
-        await socialMediaHubDb.dropCollection(env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
+      if (collections.find((collection) => collection.collectionName === e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME))
+        await socialMediaHubDb.dropCollection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME);
+      if (collections.find((collection) => collection.collectionName === e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME))
+        await socialMediaHubDb.dropCollection(e2eTestEnv.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME);
       // return explicitly
     } catch (err) {
       // throw explicitly

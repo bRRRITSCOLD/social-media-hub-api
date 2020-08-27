@@ -9,6 +9,7 @@ import { mongo } from '../../lib/mongo';
 import { UserInterface } from '../../models/user';
 import { UserToken } from '../../models/user-token';
 import { AnyObject } from '../../models/common';
+import { APIError } from '../../models';
 
 export interface SearchUserTokensRequestInterface {
   searchCriteria: AnyObject;
@@ -65,6 +66,9 @@ export async function searchUserTokens(
       totalUserTokens,
     };
   } catch (err) {
-    throw err;
+    // build error
+    const error = new APIError(err);
+    // throw error explicitly
+    throw error;
   }
 }

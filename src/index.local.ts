@@ -17,6 +17,7 @@ import { APIError } from './models/error';
 
 // app
 import { bootstrap } from './app';
+import { cloudWatchEvents } from './lib/aws';
 
 // certralize app exiting
 function exit(code?: number | string | boolean | any) {
@@ -68,7 +69,10 @@ process.on('unhandledRejection', (err: unknown) => {
     ]);
     // initialize synchronous libraries, connectiones, etc. here
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    [authentication.oAuthConnector.init([...require('./configs/oauth').default])];
+    [
+      authentication.oAuthConnector.init([...require('./configs/oauth').default]),
+      cloudWatchEvents.init({ endpoint: env.AWS_LOCALSTACK_ENDPOINT }),
+    ];
     // build app
     const app = await bootstrap();
     // start server

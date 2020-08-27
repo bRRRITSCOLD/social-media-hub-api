@@ -7,11 +7,10 @@ import * as _ from 'lodash';
 import Container from 'typedi';
 
 // libraries
-import { env } from '../../../../../src/lib/environment';
 import { mongo } from '../../../../../src/lib/mongo';
 import * as authentication from '../../../../../src/lib/authentication';
 import * as cryptography from '../../../../../src/lib/cryptography';
-import { testEnv } from '../../../../lib';
+import { e2eTwitterTestEnv } from '../../../../lib';
 
 // models
 import { APIError } from '../../../../../src/models/error';
@@ -34,31 +33,29 @@ const userAccessService = Container.get<UserAccessService>(UserAccessService);
 async function customStartUp() {
   try {
     // get mongo connection
-    const socialMediaHubDb = await mongo.getConnection(env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
+    const socialMediaHubDb = await mongo.getConnection(e2eTwitterTestEnv.MONGO_SOCIAL_MEDIA_HUB_DB_NAME);
     // query mongo to get user that is testing
-    // by email address (testEnv.EMAIL_ADDRESS)
+    // by email address (e2eTwitterTestEnv.EMAIL_ADDRESS)
     const [existingUser] = await socialMediaHubDb
-      .collection(env.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
-      .find({ emailAddress: testEnv.EMAIL_ADDRESS, password: { $exists: true, $ne: null } })
+      .collection(e2eTwitterTestEnv.MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME)
+      .find({ emailAddress: e2eTwitterTestEnv.EMAIL_ADDRESS, password: { $exists: true, $ne: null } })
       .toArray();
     // validate we found a user
     if (!existingUser) throw new APIError(
-      new Error(`Could not find user ${testEnv.EMAIL_ADDRESS}`),
+      new Error(`Could not find user ${e2eTwitterTestEnv.EMAIL_ADDRESS}`),
     );
     // validate passwords match
-    if (!await cryptography.password.compare(testEnv.PASSWORD, existingUser.password)) throw new APIError(
-      new Error(`Failed to login for user ${testEnv.EMAIL_ADDRESS}`),
+    if (!await cryptography.password.compare(e2eTwitterTestEnv.PASSWORD, existingUser.password)) throw new APIError(
+      new Error(`Failed to login for user ${e2eTwitterTestEnv.EMAIL_ADDRESS}`),
     );
     // login the user to aquire correct jwt
     const userCredentials = await userAccessService.loginUser({
-      emailAddress: testEnv.EMAIL_ADDRESS,
-      password: testEnv.PASSWORD,
+      emailAddress: e2eTwitterTestEnv.EMAIL_ADDRESS,
+      password: e2eTwitterTestEnv.PASSWORD,
       ipAddress: '127.0.0.1',
     });
     // cache the user's credentials
     cachedUserCredentials = _.assign({}, userCredentials);
-    // create and store app
-    app = await bootstrap();
     // return explicitly
     return;
   } catch (err) {
@@ -71,29 +68,19 @@ async function customStartUp() {
 describe('api/twitter/resolvers/TwitterAccess.resolver e2e tests', () => {
   before(async () => {
     try {
-      // load envs
-      await Promise.all([
-        env.init({
-          ...require('../../../../../src/configs/environment').default,
-          options: {
-            path: './.env',
-            example: './.env.example',
-          },
-        }),
-        testEnv.init({
-          ...require('../../../../../src/configs/environment').default,
-          options: {
-            path: './.env.test',
-            example: './.env.test.example',
-          },
-        }),
-      ]);
+      // load envs - do this sequentially
+      // to get the right values set - since
+      // we need a real user to run twitter tests
+      // run "real" env last to set "real" env vars
+      await e2eTwitterTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
         mongo.init([...require('../../../../../src/configs/datasources/mongo').default]),
       ]);
       // initialize synchronous libraries, connectiones, etc. here
       [authentication.oAuthConnector.init([...require('../../../../../src/configs/oauth').default])];
+      // create and store app
+      app = await bootstrap();
       // cusom start up functionality
       await customStartUp();
       // return explicitly

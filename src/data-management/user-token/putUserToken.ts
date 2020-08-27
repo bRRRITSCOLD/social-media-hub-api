@@ -53,6 +53,9 @@ export async function putUserToken(
     // return new user
     return new UserToken(findOneAndUpdateResponse.value as UserTokenInterface);
   } catch (err) {
-    throw err;
+    // build error
+    const error = new APIError(err);
+    // throw error explicitly
+    throw error;
   }
 }

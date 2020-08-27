@@ -8,6 +8,7 @@ import { mongo } from '../../lib/mongo';
 // models
 import { User, UserInterface } from '../../models/user';
 import { AnyObject } from '../../models/common';
+import { APIError } from '../../models';
 
 export interface SearchUsersRequestInterface {
   searchCriteria: AnyObject;
@@ -64,6 +65,9 @@ export async function searchUsers(
       totalUsers,
     };
   } catch (err) {
-    throw err;
+    // build error
+    const error = new APIError(err);
+    // throw error explicitly
+    throw error;
   }
 }

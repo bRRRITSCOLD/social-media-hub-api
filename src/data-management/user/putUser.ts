@@ -53,6 +53,9 @@ export async function putUser(
     // return new user
     return new User(findOneAndUpdateResponse.value as UserInterface);
   } catch (err) {
-    throw err;
+    // build error
+    const error = new APIError(err);
+    // throw error explicitly
+    throw error;
   }
 }
