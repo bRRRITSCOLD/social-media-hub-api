@@ -17,4 +17,10 @@
     ],
     "strictPropertyInitialization": false,
   },
+  "exclude": [
+    "cdk.out",
+    "scripts",
+    "docker",
+    "private"
+  ]
 }

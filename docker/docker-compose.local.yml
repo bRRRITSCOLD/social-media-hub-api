@@ -1,4 +1,4 @@
-version: "3.2"
+version: "3.3"
 
 services:
   localstack:
@@ -8,13 +8,14 @@ services:
       - "4566-4599:4566-4599"
       - "8055:8080"
     environment:
-      - SERVICES=${SERVICES-events}
-      - DEBUG=${DEBUG-1 }
-      - DATA_DIR=${DATA_DIR- }
-      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
+      - SERVICES=${SERVICES-s3,lambda,cloudformation,apigateway,dynamodb }
+      - DEBUG=${DEBUG-true }
+      - DATA_DIR=${DATA_DIR-/tmp/localstack/data }
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-local }
       - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
       - DOCKER_HOST=unix:///var/run/docker.sock
       - HOST_TMP_FOLDER=${TMPDIR}
+      - START_WEB=${START_WEB-1 }
     volumes:
       - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"

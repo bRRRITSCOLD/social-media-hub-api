@@ -17,7 +17,7 @@ import { APIError } from './models/error';
 
 // app
 import { bootstrap } from './app';
-import { cloudWatchEvents } from './lib/aws';
+import { dynamoDB, documentClient } from './lib/aws';
 
 // certralize app exiting
 function exit(code?: number | string | boolean | any) {
@@ -71,7 +71,8 @@ process.on('unhandledRejection', (err: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     [
       authentication.oAuthConnector.init([...require('./configs/oauth').default]),
-      cloudWatchEvents.init({ endpoint: env.AWS_LOCALSTACK_ENDPOINT }),
+      dynamoDB.init({ endpoint: env.AWS_LOCALSTACK_ENDPOINT }),
+      documentClient.init({ endpoint: env.AWS_LOCALSTACK_ENDPOINT }),
     ];
     // build app
     const app = await bootstrap();

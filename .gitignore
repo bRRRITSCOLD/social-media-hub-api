@@ -96,3 +96,7 @@ package-lock.json
 
 # private files
 private/
+
+cdk.out
+
+staging

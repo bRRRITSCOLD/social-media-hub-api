@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
-printf "starting local infra"
-sudo TMPDIR=/private$TMPDIR docker-compose --file=./docker/docker-compose.local.yml up
-printf "started local infra"
+printf "starting local infra\n"
+sudo TMPDIR=/private$TMPDIR docker-compose --file=./docker/docker-compose.local.yml up -d
+printf "started localstack\n"
+sudo cdk synth > staging/SocialMediaHubAWSStack.template.yml
+printf "sythed cdk stack\n"
+sudo awslocal cloudformation create-stack --stack-name SocialMediaHubAWSStack --template-body file://./staging/SocialMediaHubAWSStack.template.yml
+printf "started local infra\n"
