@@ -24,7 +24,7 @@
       "env": {
         "NODE_ENV": "LOCAL",
         "DATACENTER_ENV": "ONPREM"
-      },
+      }
     },
     {
       "type": "node",
@@ -96,7 +96,7 @@
         "--parallel=false",
         "--exit",
         "${workspaceFolder}/test/e2e/api/user/resolvers/**.ts",
-        "${workspaceFolder}/test/e2e/api/twitter/resolvers/**.ts",
+        "${workspaceFolder}/test/e2e/api/twitter/resolvers/**.ts"
       ],
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal",
@@ -125,7 +125,7 @@
       "env": {
         "NODE_ENV": "LOCAL",
         "DATACENTER_ENV": "ONPREM"
-      },
+      }
     },
     {
       "type": "node",
@@ -147,6 +147,13 @@
         "NODE_ENV": "LOCAL",
         "DATACENTER_ENV": "ONPREM"
       }
+    },
+    {
+      "name": "Docker Node.js Launch",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: debug",
+      "platform": "node"
     }
   ]
 }
