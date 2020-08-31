@@ -75,7 +75,7 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
       await e2eTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
-        mongo.init([...require('../../../../../src/configs/datasources/mongo').default]),
+        mongo.init([...require('../../../../../src/configs/mongo').default]),
       ]);
       // synchronous start up init tasks
       [];

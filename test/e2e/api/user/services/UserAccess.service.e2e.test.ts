@@ -56,7 +56,7 @@ describe('api/user/services/UserAccess e2e tests', () => {
       await e2eTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
-        mongo.init([...require('../../../../../src/configs/datasources/mongo').default]),
+        mongo.init([...require('../../../../../src/configs/mongo').default]),
       ]);
       // initailize synchronous libraries, ets
       [];

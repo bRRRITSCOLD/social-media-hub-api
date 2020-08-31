@@ -65,7 +65,7 @@ process.on('unhandledRejection', (err: unknown) => {
     await env.init({ ...require('./configs/environment').default });
     // initialize asynchronous libraries, connectiones, etc. here
     await Promise.all([
-      mongo.init([...require('./configs/datasources/mongo').default]),
+      mongo.init([...require('./configs/mongo').default]),
     ]);
     // initialize synchronous libraries, connectiones, etc. here
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions

@@ -98,7 +98,7 @@ describe('api/twitter/resolvers/TwitterTimeline.resolver e2e tests', () => {
       await e2eTwitterTestEnv.init();
       // initialize asynchronous e2eTwitterTestEnv., connectiones, etc. here
       await Promise.all([
-        mongo.init([...require('../../../../../src/configs/datasources/mongo').default]),
+        mongo.init([...require('../../../../../src/configs/mongo').default]),
       ]);
       // initialize synchronous e2eTwitterTestEnv., connectiones, etc. here
       [authentication.oAuthConnector.init([...require('../../../../../src/configs/oauth').default])];

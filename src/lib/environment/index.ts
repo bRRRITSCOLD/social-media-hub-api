@@ -13,6 +13,7 @@ export interface EnvInterface extends EnvironmentInterface {
   TIWTTER_OAUTH_CALLBACK_URL: string;
   TWITTER_BEARER_TOKEN: string;
   MONGO_SOCIAL_MEDIA_HUB_DB_HOST: string;
+  MONGO_SOCIAL_MEDIA_HUB_DB_PORT: number;
   MONGO_SOCIAL_MEDIA_HUB_DB_NAME: string;
   MONGO_SOCIAL_MEDIA_HUB_API_USER: string;
   MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD: string;
@@ -91,6 +92,12 @@ export class Env extends Environment implements EnvInterface {
   }
   public set MONGO_SOCIAL_MEDIA_HUB_DB_HOST(value: string) {
     process.env.MONGO_SOCIAL_MEDIA_HUB_DB_HOST = `${value}`;
+  }
+  public get MONGO_SOCIAL_MEDIA_HUB_DB_PORT(): number {
+    return +(process.env.MONGO_SOCIAL_MEDIA_HUB_DB_PORT as string);
+  }
+  public set MONGO_SOCIAL_MEDIA_HUB_DB_PORT(value: number) {
+    process.env.MONGO_SOCIAL_MEDIA_HUB_DB_PORT = `${value}`;
   }
   public get MONGO_SOCIAL_MEDIA_HUB_DB_NAME(): string {
     return process.env.MONGO_SOCIAL_MEDIA_HUB_DB_NAME as string;

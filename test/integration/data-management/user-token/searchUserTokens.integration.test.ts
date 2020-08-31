@@ -28,7 +28,7 @@ describe('data-management/user-token/searchUserTokens integration tests', () => 
       await integrationTestEnv.init();
       // initialize asynchronous libraries, connectiones, etc. here
       await Promise.all([
-        mongo.init([...require('../../../../src/configs/datasources/mongo').default]),
+        mongo.init([...require('../../../../src/configs/mongo').default]),
       ]);
       // load data for tests
       staticUserTokens = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/user-tokens.json`, { encoding: 'utf-8' }));

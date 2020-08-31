@@ -64,6 +64,7 @@ typings/
 
 # dotenv environment variables file
 .env
+.env.devcontainer
 .env.unit.test
 .env.integration.test
 .env.integration.twitter.test

@@ -1,18 +1,49 @@
-version: "3.3"
+version: "3"
 
 services:
-  # node_typescript:
-  #   build:
-  #     context: .
-  #     dockerfile: ./Dockerfile
-  #   ports:
-  #     - 3000
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Update VARIANT to pick a node version: 10, 12, 14
+        VARIANT: 14
+        # On Linux, you may need to update USER_UID and USER_GID below if not your local UID is not 1000.
+        USER_UID: 1000
+        USER_GID: 1000
+    volumes:
+      - ..:/workspace:cached
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+  mongodb:
+    image: mongo:latest
+    restart: always
+    # volumes:
+    #   - mongodb-data:/data/db
+    # Runs MongoDB on the same network as the app container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:app
+    # Uncomment to change startup options
+    # environment:
+    #  MONGO_INITDB_ROOT_USERNAME: root
+    #  MONGO_INITDB_ROOT_PASSWORD: example
+    #  MONGO_INITDB_DATABASE: your-database-here
+    # Add "forwardPorts": ["27017"] to **devcontainer.json** to forward MongoDB locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+  redis:
+    image: redis:latest
+    restart: always
+    # Runs MongoDB on the same network as the app container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:app
+    # volumes:
+    #   - redis-data:/data
   localstack:
-    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
     image: localstack/localstack:latest
-    ports:
-      - "4566-4599:4566-4599"
-      - "8055:8080"
+    restart: always
+    # ports:
+    #   - "4566-4599:4566-4599"
+    #   - "8055:8080"
+    # Runs MongoDB on the same network as the app container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:app
     environment:
       - SERVICES=${SERVICES-s3,lambda,cloudformation,apigateway,dynamodb }
       - DEBUG=${DEBUG-true }
@@ -20,8 +51,11 @@ services:
       - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-local }
       - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - HOST_TMP_FOLDER=${TMPDIR}
-      - START_WEB=${START_WEB-1 }
+      - HOST_TMP_FOLDER=/tmp/localstack
     volumes:
-      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      # - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+
+# volumes:
+#   mongodb-data:
+#   redis-data:

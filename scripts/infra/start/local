@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
-printf "starting local infra\n"
-sudo TMPDIR=/private$TMPDIR docker-compose --file=./docker/docker-compose.local.yml up -d
-printf "started localstack\n"
-sudo cdk synth > staging/SocialMediaHubAWSStack.template.yml
-printf "sythed cdk stack\n"
+printf "installing node_modules\n"
+npm install
+printf "installed node_modules\n"
+
+printf "sything cdk stack\n"
+sudo npx cdk synth > staging/SocialMediaHubAWSStack.template.yml
+printf "synted cdk stack\n"
+
+printf "creating stack\n"
 sudo awslocal cloudformation create-stack --stack-name SocialMediaHubAWSStack --template-body file://./staging/SocialMediaHubAWSStack.template.yml
-printf "started local infra\n"
+printf "created stck\n"
+
+printf "setting up mongo users\n"
+mongo localDb <<EOF
+db.createRole({
+  role: "readWriteMinusDropRole",
+  privileges: [
+  {
+    resource: { db: "localDb", collection: ""},
+    actions: [ "collStats", "dbHash", "dbStats", "find", "killCursors", "listIndexes", "listCollections", "convertToCapped", "createCollection", "createIndex", "dropIndex", "insert", "remove", "renameCollectionSameDB", "update"]} ],
+    roles: []
+  }
+);
+use admin;
+db.createUser({user: "localuser", pwd: "1234abcd", roles: [{role: "readWriteMinusDropRole", db: "localDb"}]})
+quit()
+EOF
+printf "set up mongo users\n"

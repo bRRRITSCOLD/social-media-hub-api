@@ -36,7 +36,7 @@
 //       await env.init({ ...require('../../../../src/configs/environment').default });
 //       // initialize asynchronous libraries, connectiones, etc. here
 //       await Promise.all([
-//         mongo.init([...require('../../../../src/configs/datasources/mongo').default]),
+//         mongo.init([...require('../../../../src/configs/mongo').default]),
 //       ]);
 //       // load data for tests
 //       staticUsers = JSON.parse(await testUtils.files.readFile(`${process.cwd()}/test/data/static/users.json`, { encoding: 'utf-8' }));
