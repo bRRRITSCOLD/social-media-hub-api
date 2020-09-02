@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+printf "starting localstack dynamodb admin ui\n"
+sudo AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local DYNAMO_ENDPOINT=http://localhost:4569 dynamodb-admin
+printf "started localstack dynamodb admin ui\n"

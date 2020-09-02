@@ -1,4 +1,5 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
 printf "deleting localstack stack\n"
 sudo awslocal cloudformation delete-stack --stack-name SocialMediaHubAWSStack
 printf "deleted localstack stack\n"

@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
+
 printf "starting app locally"
 NODE_ENV=LOCAL node --require ts-node/register src/index.local.ts

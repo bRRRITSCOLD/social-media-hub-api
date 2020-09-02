@@ -1,14 +1,15 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
 printf "starting docker stack\n"
 sudo TMPDIR=/private$TMPDIR docker-compose --file=./docker/docker-compose.local.yml up -d
 printf "started docker stack\n"
 
 printf "sything aws-cdk stack\n"
-sudo cdk synth > staging/SocialMediaHubAWSStack.template.yml
+sudo cdk synth > staging/stack/aws/SocialMediaHubAWSStack.template.yml
 printf "synted aws-cdk stack\n"
 
 printf "creating localstack stack\n"
-sudo awslocal cloudformation create-stack --stack-name SocialMediaHubAWSStack --template-body file://./staging/SocialMediaHubAWSStack.template.yml
+sudo awslocal cloudformation create-stack --stack-name SocialMediaHubAWSStack --template-body file://./staging/stack/aws/SocialMediaHubAWSStack.template.yml
 printf "created localstack stack\n"
 
 printf "setting up mongo users\n"
@@ -27,7 +28,3 @@ db.createUser({user: "localuser", pwd: "1234abcd", roles: [{role: "readWriteMinu
 quit()
 EOF
 printf "set up mongo users\n"
-
-printf "starting localstack dynamodb admin ui\n"
-DYNAMO_ENDPOINT=http://localhost:4569 dynamodb-admin
-printf "started localstack dynamodb admin ui\n"
