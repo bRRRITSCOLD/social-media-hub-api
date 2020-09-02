@@ -71,8 +71,8 @@ process.on('unhandledRejection', (err: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     [
       authentication.oAuthConnector.init([...require('./configs/oauth').default]),
-      dynamoDB.init({ endpoint: env.AWS_LOCALSTACK_ENDPOINT }),
-      documentClient.init({ endpoint: env.AWS_LOCALSTACK_ENDPOINT }),
+      dynamoDB.init({ endpoint: env.AWS_DYNAMODB_LOCALSTACK_ENDPOINT }),
+      documentClient.init({ endpoint: env.AWS_DYNAMODB_LOCALSTACK_ENDPOINT }),
     ];
     // build app
     const app = await bootstrap();

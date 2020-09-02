@@ -1,8 +1,13 @@
 {
   "name": "Node.js & Mongo DB",
-  "dockerComposeFile": "docker-compose.yml",
+  "dockerComposeFile": "docker-compose.devcontainer.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
+  "build": {
+    "args": {
+      "VARIANT": 14
+    }
+  },
   // Set *default* container specific settings.json values on container create.
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash"
@@ -10,7 +15,8 @@
   "forwardPorts": [
     3000,
     "4566-4599:4566-4599",
-    "8055:8080"
+    "8055:8080",
+    6379
   ],
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [

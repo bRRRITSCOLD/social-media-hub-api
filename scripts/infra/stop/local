@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-printf "stopping local infra\n"
+printf "deleting localstack stack\n"
 sudo awslocal cloudformation delete-stack --stack-name SocialMediaHubAWSStack
-printf "deleted stack\n"
+printf "deleted localstack stack\n"
+
+printf "stopping docker stack\n"
 sudo docker-compose --file=./docker/docker-compose.local.yml down
-printf "stopped local infra\n"
+printf "stopped docker stack\n"

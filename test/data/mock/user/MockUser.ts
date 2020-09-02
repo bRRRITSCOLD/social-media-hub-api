@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 // models
 import {
   User, UserInterface,
-} from '../../../src/models/user';
+} from '../../../../src/models/user';
 
 export class MockUser extends User {
   public constructor() {

@@ -19,10 +19,11 @@ export interface EnvInterface extends EnvironmentInterface {
   MONGO_SOCIAL_MEDIA_HUB_API_PASSWORD: string;
   MONGO_SOCIAL_MEDIA_HUB_USERS_COLLECTION_NAME: string;
   MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME: string;
+  DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME: string;
   // computed env vars
   isLocal: boolean;
   // "static"/harcoded env vars
-  AWS_LOCALSTACK_ENDPOINT: string;
+  AWS_DYNAMODB_LOCALSTACK_ENDPOINT: string;
 }
 
 export class Env extends Environment implements EnvInterface {
@@ -129,13 +130,19 @@ export class Env extends Environment implements EnvInterface {
   public set MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME(value: string) {
     process.env.MONGO_SOCIAL_MEDIA_HUB_USER_TOKENS_COLLECTION_NAME = `${value}`;
   }
+  public get DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME(): string {
+    return process.env.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME as string;
+  }
+  public set DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME(value: string) {
+    process.env.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME = `${value}`;
+  }
   // computed values
   public get isLocal(): boolean {
     return this.NODE_ENV.toUpperCase() === 'LOCAL';
   }
   // "static"/hardcoded values
-  public get AWS_LOCALSTACK_ENDPOINT(): string {
-    return 'http://localhost:4582';
+  public get AWS_DYNAMODB_LOCALSTACK_ENDPOINT(): string {
+    return 'http://localhost:4569';
   }
 }
 

@@ -4,12 +4,12 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // libraries
-import { testUtils } from '../../lib';
+import { testUtils } from '../../../lib';
 
 // models
 import {
   UserToken, UserTokenInterface, UserTokenTypeEnum,
-} from '../../../src/models/user-token';
+} from '../../../../src/models/user-token';
 
 export class MockUserToken extends UserToken {
   public constructor() {

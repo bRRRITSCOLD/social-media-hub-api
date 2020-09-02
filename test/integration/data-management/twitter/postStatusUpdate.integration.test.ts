@@ -93,6 +93,7 @@ describe('data-management/twitter/postStatusUpdate integration tests', () => {
       throw err;
     }
   });
+
   context('{ oAuthAccessToken, oAuthAccessTokenSecret, status }', () => {
     beforeEach(async () => {
       try {
