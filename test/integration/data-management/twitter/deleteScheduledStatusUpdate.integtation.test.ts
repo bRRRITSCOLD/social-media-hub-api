@@ -17,6 +17,7 @@ import * as twitterManager from '../../../../src/data-management/twitter';
 
 // mock/static data
 import { MockTwitterScheduledStatusUpdate } from '../../../data/mock';
+import { AnyObject } from '../../../../src/models';
 
 let mockTwitterScheduledTweets: Partial<MockTwitterScheduledStatusUpdate>[] | Partial<TwitterScheduledStatusUpdate>[];
 
@@ -125,6 +126,50 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
     }
   });
 
+  // it('- should delete 1...N twitter scheduled status update instances that match given scheduledStatusUpdateIds and twitterScreenNames ', async () => {
+  //   try {
+  //     // get test copy of
+  //     // data used for test
+  //     const testMockTwitterScheduledStatusUpdates = mockTwitterScheduledTweets.slice(0, 1);
+  //     // set expectations
+  //     const EXPECTED_ARRAY_CLASS_INSTANCE = Array;
+  //     const EXPECTED_UNPROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS_LENGTH = 0;
+  //     const EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS = testMockTwitterScheduledStatusUpdates.slice(0, testMockTwitterScheduledStatusUpdates.length).map((item: any) => ({
+  //       scheduledStatusUpdateId: item.scheduledStatusUpdateId,
+  //       twitterScreenName: item.twitterScreenName,
+  //     }));
+  //     const EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS_LENGTH = EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS.length;
+  //     // intiate holders for test
+  //     // run testee
+  //     const deleteScheduledStatusUpdatesResponse = await twitterManager.deleteScheduledStatusUpdates({
+  //       scheduledStatusUpdateKeys: testMockTwitterScheduledStatusUpdates.map((testMockTwitterScheduledStatusUpdate) => ({
+  //         scheduledStatusUpdateId: testMockTwitterScheduledStatusUpdate.scheduledStatusUpdateId as string,
+  //         twitterScreenName: testMockTwitterScheduledStatusUpdate.twitterScreenName as string,
+  //       })),
+  //     });
+  //     // validate results
+  //     expect(deleteScheduledStatusUpdatesResponse !== undefined).to.be.true;
+  //     expect(deleteScheduledStatusUpdatesResponse.unprocessedScheduledStatusUpdateKeys !== undefined).to.be.true;
+  //     expect(deleteScheduledStatusUpdatesResponse.unprocessedScheduledStatusUpdateKeys instanceof EXPECTED_ARRAY_CLASS_INSTANCE).to.be.true;
+  //     expect(deleteScheduledStatusUpdatesResponse.unprocessedScheduledStatusUpdateKeys?.length === EXPECTED_UNPROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS_LENGTH).to.be.true;
+  //     expect(deleteScheduledStatusUpdatesResponse.processedScheduledStatusUpdateKeys !== undefined).to.be.true;
+  //     expect(deleteScheduledStatusUpdatesResponse.processedScheduledStatusUpdateKeys instanceof EXPECTED_ARRAY_CLASS_INSTANCE).to.be.true;
+  //     expect(deleteScheduledStatusUpdatesResponse.processedScheduledStatusUpdateKeys?.length === EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS_LENGTH).to.be.true;
+  //     for (const processedScheduledStatusUpdateKey of deleteScheduledStatusUpdatesResponse.processedScheduledStatusUpdateKeys) {
+  //       expect(
+  //         EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS.find((expectedScheduledStatusUpdateKey: any) =>
+  //           expectedScheduledStatusUpdateKey.scheduledStatusUpdateId === processedScheduledStatusUpdateKey.scheduledStatusUpdateId
+  //           && expectedScheduledStatusUpdateKey.twitterScreenName === processedScheduledStatusUpdateKey.twitterScreenName) !== undefined,
+  //       ).to.be.true;
+  //     }
+  //     // return explicitly
+  //     return;
+  //   } catch (err) {
+  //   // throw explicitly
+  //     throw err;
+  //   }
+  // });
+
   it('- should delete 1...N twitter scheduled status update instances that match given scheduledStatusUpdateIds and twitterScreenNames ', async () => {
     try {
       // get test copy of
@@ -159,6 +204,82 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
           EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS.find((expectedScheduledStatusUpdateKey: any) =>
             expectedScheduledStatusUpdateKey.scheduledStatusUpdateId === processedScheduledStatusUpdateKey.scheduledStatusUpdateId
             && expectedScheduledStatusUpdateKey.twitterScreenName === processedScheduledStatusUpdateKey.twitterScreenName) !== undefined,
+        ).to.be.true;
+      }
+      // scan dynamo db to verify
+      let [{
+        FilterExpression, ExpressionAttributeValues,
+      }] = testMockTwitterScheduledStatusUpdates
+        .reduce(
+          (dynamoDBQuery: [{ ScreenNameFilterExpressionValues: string[]; ScheduledStatusUpdateIdFilterExpressionValues: string[]; ExpressionAttributeValues: AnyObject }], testMockTwitterScheduledStatusUpdate: any, index: number) => {
+            const screenNameReplacementKey = `:twitterScreenName${index}`;
+            const scheduledStatusUpdateIdReplacementKey = `:scheduledStatusUpdateId${index}`;
+            dynamoDBQuery[0].ExpressionAttributeValues[screenNameReplacementKey] = testMockTwitterScheduledStatusUpdate.twitterScreenName;
+            dynamoDBQuery[0].ExpressionAttributeValues[scheduledStatusUpdateIdReplacementKey] = testMockTwitterScheduledStatusUpdate.scheduledStatusUpdateId;
+            dynamoDBQuery[0].ScreenNameFilterExpressionValues.push(screenNameReplacementKey);
+            dynamoDBQuery[0].ScheduledStatusUpdateIdFilterExpressionValues.push(scheduledStatusUpdateIdReplacementKey);
+            return dynamoDBQuery;
+          },
+          [{ ExpressionAttributeValues: {}, ScreenNameFilterExpressionValues: [], ScheduledStatusUpdateIdFilterExpressionValues: [] }],
+        )
+        .map((dynamoDBQuery: { ScreenNameFilterExpressionValues: string[]; ScheduledStatusUpdateIdFilterExpressionValues: string[]; ExpressionAttributeValues: AnyObject }) => ({
+          FilterExpression: `twitterScreenName IN (${dynamoDBQuery.ScreenNameFilterExpressionValues.join(', ')}) AND scheduledStatusUpdateId IN (${dynamoDBQuery.ScheduledStatusUpdateIdFilterExpressionValues.join(', ')})`,
+          ExpressionAttributeValues: dynamoDBQuery.ExpressionAttributeValues,
+        }));
+        // dynamoDBQuery[0].ScreenNameFilterExpression.push(`${key} IN (${replacementKeys.join(', ')})`);
+      // query dynamo db
+      let scanResponse = await documentClient.client
+        .scan({
+          TableName: integrationTestEnv.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME,
+          FilterExpression,
+          ExpressionAttributeValues,
+        })
+        .promise();
+      // store found items
+      expect(scanResponse !== undefined).to.be.true;
+      expect(scanResponse.Items !== undefined).to.be.true;
+      expect(scanResponse.Items instanceof EXPECTED_ARRAY_CLASS_INSTANCE).to.be.true;
+      expect((scanResponse.Items as any[]).length === 0).to.be.true;
+
+      // scan dynamo db to verify
+      [{
+        FilterExpression, ExpressionAttributeValues,
+      }] = mockTwitterScheduledTweets
+        .reduce(
+          (dynamoDBQuery: [{ ScreenNameFilterExpressionValues: string[]; ScheduledStatusUpdateIdFilterExpressionValues: string[]; ExpressionAttributeValues: AnyObject }], testMockTwitterScheduledStatusUpdate: any, index: number) => {
+            const screenNameReplacementKey = `:twitterScreenName${index}`;
+            const scheduledStatusUpdateIdReplacementKey = `:scheduledStatusUpdateId${index}`;
+            dynamoDBQuery[0].ExpressionAttributeValues[screenNameReplacementKey] = testMockTwitterScheduledStatusUpdate.twitterScreenName;
+            dynamoDBQuery[0].ExpressionAttributeValues[scheduledStatusUpdateIdReplacementKey] = testMockTwitterScheduledStatusUpdate.scheduledStatusUpdateId;
+            dynamoDBQuery[0].ScreenNameFilterExpressionValues.push(screenNameReplacementKey);
+            dynamoDBQuery[0].ScheduledStatusUpdateIdFilterExpressionValues.push(scheduledStatusUpdateIdReplacementKey);
+            return dynamoDBQuery;
+          },
+          [{ ExpressionAttributeValues: {}, ScreenNameFilterExpressionValues: [], ScheduledStatusUpdateIdFilterExpressionValues: [] }],
+        )
+        .map((dynamoDBQuery: { ScreenNameFilterExpressionValues: string[]; ScheduledStatusUpdateIdFilterExpressionValues: string[]; ExpressionAttributeValues: AnyObject }) => ({
+          FilterExpression: `twitterScreenName IN (${dynamoDBQuery.ScreenNameFilterExpressionValues.join(', ')}) AND scheduledStatusUpdateId IN (${dynamoDBQuery.ScheduledStatusUpdateIdFilterExpressionValues.join(', ')})`,
+          ExpressionAttributeValues: dynamoDBQuery.ExpressionAttributeValues,
+        }));
+      // dynamoDBQuery[0].ScreenNameFilterExpression.push(`${key} IN (${replacementKeys.join(', ')})`);
+      // query dynamo db
+      scanResponse = await documentClient.client
+        .scan({
+          TableName: integrationTestEnv.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME,
+          FilterExpression,
+          ExpressionAttributeValues,
+        })
+        .promise();
+      // store found items
+      expect(scanResponse !== undefined).to.be.true;
+      expect(scanResponse.Items !== undefined).to.be.true;
+      expect(scanResponse.Items instanceof EXPECTED_ARRAY_CLASS_INSTANCE).to.be.true;
+      expect((scanResponse.Items as any[]).length === mockTwitterScheduledTweets.length - EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS_LENGTH).to.be.true;
+      for (const foundScannedItem of (scanResponse.Items as any[])) {
+        expect(
+          EXPECTED_PROCCESSED_SCHEDULED_STATUS_UPDATE_KEYS.find((expectedProcessedScheduledStatusUpdateKey: any) =>
+            expectedProcessedScheduledStatusUpdateKey.twitterScreenName === foundScannedItem.twitterScreenName
+            && expectedProcessedScheduledStatusUpdateKey.scheduledStatusUpdateId === foundScannedItem.scheduledStatusUpdateId) === undefined,
         ).to.be.true;
       }
       // return explicitly
