@@ -5,11 +5,11 @@ sudo TMPDIR=/private$TMPDIR docker-compose --file=./docker/docker-compose.local.
 printf "started docker stack\n"
 
 printf "sything aws-cdk stack\n"
-sudo cdk synth > staging/stack/aws/SocialMediaHubAWSStack.template.yml
+sudo cdk synth > staging/SocialMediaHubAWSStack.template.yml
 printf "synted aws-cdk stack\n"
 
 printf "creating localstack stack\n"
-sudo awslocal cloudformation create-stack --stack-name SocialMediaHubAWSStack --template-body file://./staging/stack/aws/SocialMediaHubAWSStack.template.yml
+sudo awslocal cloudformation create-stack --stack-name SocialMediaHubAWSStack --template-body file://./staging/SocialMediaHubAWSStack.template.yml
 printf "created localstack stack\n"
 
 printf "setting up mongo users\n"

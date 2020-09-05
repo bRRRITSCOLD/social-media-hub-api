@@ -5,3 +5,4 @@ export * from './getHomeTimeline';
 export * from './getMentionsTimeline';
 export * from './postStatusUpdate';
 export * from './searchScheduledStatusUpdates';
+export * from './deleteScheduledStatusUpdates';

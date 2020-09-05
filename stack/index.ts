@@ -16,7 +16,7 @@ const APIGatewayLambdaDynamoDBsStack = createAWSAPIGatewayLambdaDynamoDBsStack({
     {
       tableName: 'scheduledTwitterTweets',
       partitionKey: {
-        name: 'scheduledTweetId',
+        name: 'scheduledStatusUpdateId',
         type: cdkDynamoDB.AttributeType.STRING,
       },
       sortKey: {

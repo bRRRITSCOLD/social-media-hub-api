@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { documentClient } from '../../lib/aws';
 import { env } from '../../lib/environment';
 import { AnyObject } from '../../models';
-import { TwitterScheduledTweetInterface } from '../../models/twitter/TwitterScheduledTweet';
+import { TwitterScheduledStatusUpdateInterface } from '../../models/twitter/TwitterSchedulesSatusUpdate';
 
 export interface SearchScheduledStatusUpdatesRequestInterface {
   searchCriteria: {
@@ -72,7 +72,7 @@ export async function searchScheduledStatusUpdates(searchSchedulesStatusUpdatesR
     // return explicitly
     return {
       scheduledStatusUpdates: (_.get(scanResponse, 'Items', [] as any[]) as any[]).map(
-        (item: TwitterScheduledTweetInterface) =>
+        (item: TwitterScheduledStatusUpdateInterface) =>
           _.assign({}, item),
       ),
       exclusiveStartKey: _.get(scanResponse, 'LastEvaluatedKey') as any,

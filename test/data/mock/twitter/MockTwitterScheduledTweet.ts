@@ -4,12 +4,12 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // models
-import { TwitterScheduledTweet, TwitterScheduledTweetInterface } from '../../../../src/models/twitter/TwitterScheduledTweet';
+import { TwitterScheduledStatusUpdate, TwitterScheduledStatusUpdateInterface } from '../../../../src/models/twitter/TwitterSchedulesSatusUpdate';
 
-export class MockTwitterScheduledTweet extends TwitterScheduledTweet {
+export class MockTwitterScheduledStatusUpdate extends TwitterScheduledStatusUpdate {
   public constructor() {
-    const mockTwitterScheduledTweet: TwitterScheduledTweetInterface = {
-      scheduledTweetId: uuid(),
+    const mockTwitterScheduledTweet: TwitterScheduledStatusUpdateInterface = {
+      scheduledStatusUpdateId: uuid(),
       twitterScreenName: faker.internet.userName(),
       status: faker.lorem.paragraph().slice(0, 250),
       inReplyToStatusId: uuid(),
