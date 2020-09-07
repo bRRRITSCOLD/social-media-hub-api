@@ -24,6 +24,7 @@ import { authentication } from '../../../lib';
 
 // services
 import { TwitterStatusService } from '../services';
+import { TwitterScheduleStatusUpdateInputType } from '../types/TwitterScheduleStatusuPDATEinputType';
 
 class TwitterTimeline {}
 
@@ -48,6 +49,123 @@ export class TwitterStatusResolver {
       ]: any[] = [
         authentication.jwt.decode(context.request.headers.authorization) as AnyObject,
         twitterStatusUpdateInputType,
+      ];
+      // call service to get
+      // a user timeline that
+      // matches the given
+      // criteria
+      const statusUpdateResponse = await this.twitterStatusService.statusUpdate({
+        userId,
+        status,
+        inReplyToStatusId,
+        autoPopulateReplyMetadata,
+      });
+      // return explicitly
+      return [statusUpdateResponse];
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.error(`{}TwitterStatusResolver::#twitterStatusUpdate::error executing::error=${utils.anyy.stringify(error)}`);
+      // throw error explicitly
+      throw { errors: [error] };
+    }
+  }
+
+  @JWTAuthorization()
+  @ScopeAuthorization(['Twitter User'])
+  @Mutation((_returns: unknown) => [TwitterTweetObjectType])
+  public async twitterScheduleStatusUpdate(@Ctx() context: any, @Arg('data') twitterScheduleStatusUpdateInputType: TwitterScheduleStatusUpdateInputType): Promise<TwitterTweetObjectType[]> {
+    try {
+      // create params here for ease
+      const [
+        { userId },
+        {
+          status,
+          inReplyToStatusId,
+          autoPopulateReplyMetadata,
+        },
+      ]: any[] = [
+        authentication.jwt.decode(context.request.headers.authorization) as AnyObject,
+        twitterScheduleStatusUpdateInputType,
+      ];
+      // call service to get
+      // a user timeline that
+      // matches the given
+      // criteria
+      const statusUpdateResponse = await this.twitterStatusService.statusUpdate({
+        userId,
+        status,
+        inReplyToStatusId,
+        autoPopulateReplyMetadata,
+      });
+      // return explicitly
+      return [statusUpdateResponse];
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.error(`{}TwitterStatusResolver::#twitterStatusUpdate::error executing::error=${utils.anyy.stringify(error)}`);
+      // throw error explicitly
+      throw { errors: [error] };
+    }
+  }
+
+  @JWTAuthorization()
+  @ScopeAuthorization(['Twitter User'])
+  @Mutation((_returns: unknown) => [TwitterTweetObjectType])
+  public async twitterUpdateScheduledStatusUpdate(@Ctx() context: any, @Arg('data') twitterUpdateScheduledStatusUpdateInputType: TwitterStatusUpdateInputType): Promise<TwitterTweetObjectType[]> {
+    try {
+      // create params here for ease
+      const [
+        { userId },
+        {
+          status,
+          inReplyToStatusId,
+          autoPopulateReplyMetadata,
+        },
+      ]: any[] = [
+        authentication.jwt.decode(context.request.headers.authorization) as AnyObject,
+        twitterUpdateScheduledStatusUpdateInputType,
+      ];
+      // call service to get
+      // a user timeline that
+      // matches the given
+      // criteria
+      const statusUpdateResponse = await this.twitterStatusService.statusUpdate({
+        userId,
+        status,
+        inReplyToStatusId,
+        autoPopulateReplyMetadata,
+      });
+      // return explicitly
+      return [statusUpdateResponse];
+    } catch (err) {
+      // build error
+      const error = new APIError(err);
+      // log for debugging and run support purposes
+      logger.error(`{}TwitterStatusResolver::#twitterStatusUpdate::error executing::error=${utils.anyy.stringify(error)}`);
+      // throw error explicitly
+      throw { errors: [error] };
+    }
+  }
+
+  @JWTAuthorization()
+  @ScopeAuthorization(['Twitter User'])
+  @Mutation((_returns: unknown) => [TwitterTweetObjectType])
+  public async twitterDeleteScheduledStatusUpdate(@Ctx() context: any, @Arg('data') twitterDeleteScheduledStatusUpdateInputType: TwitterStatusUpdateInputType): Promise<TwitterTweetObjectType[]> {
+    try {
+      // create params here for ease
+      const [
+        { userId },
+        {
+          status,
+          inReplyToStatusId,
+          autoPopulateReplyMetadata,
+        },
+      ]: any[] = [
+        authentication.jwt.decode(context.request.headers.authorization) as AnyObject,
+        twitterDeleteScheduledStatusUpdateInputType,
       ];
       // call service to get
       // a user timeline that

@@ -7,16 +7,16 @@ services:
     restart: always
     ports:
       - 27017:27017
-    # volumes:
-    #   - mongodb-data:/data/db
+    volumes:
+      - mongodb-data:/data/db
   redis:
     container_name: "docker_compose_local_social_media_hub_api_redis"
     image: redis:latest
     restart: always
     ports:
       - 6379:6379
-    # volumes:
-    #   - redis-data:/data
+    volumes:
+      - redis-data:/data
   localstack:
     container_name: "docker_compose_local_social_media_hub_api_localstack"
     image: localstack/localstack:latest
@@ -36,6 +36,6 @@ services:
     volumes:
       - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
-# volumes:
-#   mongodb-data:
-#   redis-data:
+volumes:
+  mongodb-data:
+  redis-data:

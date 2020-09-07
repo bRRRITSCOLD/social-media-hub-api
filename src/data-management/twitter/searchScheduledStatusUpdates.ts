@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { documentClient } from '../../lib/aws';
 import { env } from '../../lib/environment';
 import { AnyObject } from '../../models';
-import { TwitterScheduledStatusUpdateInterface } from '../../models/twitter/TwitterSchedulesSatusUpdate';
+import { TwitterScheduledStatusUpdateInterface } from '../../models/twitter/TwitterScheduledStatusUpdate';
 
 export interface SearchScheduledStatusUpdatesRequestInterface {
   searchCriteria: {

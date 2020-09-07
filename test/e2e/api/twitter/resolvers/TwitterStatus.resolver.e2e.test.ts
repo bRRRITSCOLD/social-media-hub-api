@@ -184,6 +184,81 @@ describe('api/twitter/resolvers/TwitterStatus.resolver e2e tests', () => {
         }
       });
     });
+
+    describe('{ query: { mutation { twitterScheduleStatusUpdate(data: TwitterScheduleStatusUpdateInputType) } } }', () => {
+      beforeEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          // set up
+          // none
+          // return explicitly
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+
+      it('- should schedule a status/tweet for a user to be posted (update a user\'s status) at a future data', async () => {
+        try {
+          // set test data
+          const userCredentials = cachedUserCredentials;
+          // set expectations
+          // const EXPECTED_MINIMUM_TWITTER_USER_TIMELINE_TWEETS_LENGTH: any = 1;
+          // run testee
+          const httResponse = await app.inject({
+            method: 'POST',
+            url: '/graphql',
+            headers: {
+              'content-type': 'application/json',
+              authorization: userCredentials.jwt as string,
+            },
+            payload: {
+              query: `mutation twitterScheduleStatusUpdate($data: TwitterScheduleStatusUpdateInputType!) {
+                twitterScheduleStatusUpdate(data: $data) {
+                  createdAt,
+                  text,
+                  source,
+                  user {
+                    name,
+                    screenName
+                  }
+                }
+              }`,
+              variables: {
+                data: {
+                  status: `Test message ${uuid()} from NodeJS`,
+                },
+              },
+            },
+          });
+          // validate results
+          expect(httResponse !== undefined).to.be.true;
+          expect(httResponse.statusCode !== undefined).to.be.true;
+          expect(httResponse.statusCode === 200).to.be.true;
+          expect(httResponse.body !== undefined).to.be.true;
+          // parse JSON body
+          const parsedBody = JSON.parse(httResponse.body);
+          // validate results
+          expect(parsedBody !== undefined).to.be.true;
+          expect(parsedBody.data !== undefined).to.be.true;
+          // return explicitly
+          return;
+        } catch (err) {
+          // throw explicitly
+          throw err;
+        }
+      });
+    });
   });
 
   after(async () => {

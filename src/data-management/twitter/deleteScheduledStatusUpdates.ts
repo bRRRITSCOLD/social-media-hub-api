@@ -5,10 +5,8 @@ import * as _ from 'lodash';
 import { documentClient } from '../../lib/aws';
 import { env } from '../../lib/environment';
 
-export interface TwitterScheduledStatusUpdateKeysInterface {
-  scheduledStatusUpdateId: string;
-  twitterScreenName: string;
-}
+// models
+import { TwitterScheduledStatusUpdateKeysInterface } from '../../models/twitter/TwitterScheduledStatusUpdateKeys';
 
 export interface DeleteScheduledStatusUpdatesRequestInterface {
   scheduledStatusUpdateKeys: TwitterScheduledStatusUpdateKeysInterface[];

@@ -26,9 +26,9 @@ const twitterScheduledStatusUpdateSchema: yup.ObjectSchema<any> = yup.object().s
   inReplyToStatusId: yup
     .string()
     .label('In Reply to Status ID')
-    .required(),
-  password: yup
-    .string()
+    .optional(),
+  autoPopulateReplyMetadata: yup
+    .boolean()
     .label('Auto Populate Reply Metadata')
     .required(),
 });
@@ -46,7 +46,7 @@ export class TwitterScheduledStatusUpdate implements TwitterScheduledStatusUpdat
       scheduledStatusUpdateId: _.get(twitterScheduledStatusUpdate, 'scheduledStatusUpdateId'),
       status: _.get(twitterScheduledStatusUpdate, 'status'),
       inReplyToStatusId: _.get(twitterScheduledStatusUpdate, 'inReplyToStatusId'),
-      autoPopulateReplyMetadata: _.get(twitterScheduledStatusUpdate, 'autoPopulateReplyMetadata'),
+      autoPopulateReplyMetadata: _.get(twitterScheduledStatusUpdate, 'autoPopulateReplyMetadata', true),
     });
   }
 

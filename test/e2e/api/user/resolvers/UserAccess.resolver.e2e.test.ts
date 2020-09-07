@@ -92,7 +92,7 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
   });
 
   describe('POST /graphql', () => {
-    describe('{ query: { mutation { login(data: LoginInputType) } } }', () => {
+    describe('{ query: { mutation { registerUser(data: RegisterserInputType) } } }', () => {
       context('static data', () => {
         beforeEach(async () => {
           try {
@@ -211,7 +211,7 @@ describe('api/user/resolvers/UserAccess.resolver integration tests', () => {
       });
     });
 
-    describe('{ query: { mutation { registerUser(data: RegisterserInputType) } } }', () => {
+    describe('{ query: { mutation { login(data: LoginInputType) } } }', () => {
       context('static data', () => {
         beforeEach(async () => {
           try {

@@ -9,27 +9,27 @@ import { ScopeAuthorization } from '../../../lib/decorators';
 
 @ObjectType({ description: 'User Object Type' })
 export class UserObjectType {
-  @ScopeAuthorization(['*'])
+  // @ScopeAuthorization(['*'])
   @Field((_type: unknown) => String)
   public userId: string;
 
-  @ScopeAuthorization(['*'])
+  // @ScopeAuthorization(['*'])
   @Field((_type: unknown) => String)
   public firstName: string;
 
-  @ScopeAuthorization(['*'])
+  // @ScopeAuthorization(['*'])
   @Field((_type: unknown) => String)
   public lastName: string;
 
-  @ScopeAuthorization(['*'])
+  // @ScopeAuthorization(['*'])
   @Field((_type: unknown) => String)
   public emailAddress: string;
 
-  @ScopeAuthorization(['NEVER RETURN'])
+  // @ScopeAuthorization(['NEVER RETURN'])
   @Field((_type: unknown) => Boolean, { nullable: true })
   public password?: string | null;
 
-  @ScopeAuthorization(['*'])
+  // @ScopeAuthorization(['*'])
   @Field((_type: unknown) => [UserTokenObjectType], { nullable: true })
   public tokens?: UserTokenObjectType[] | null;
 }

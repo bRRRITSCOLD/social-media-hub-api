@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import * as _ from 'lodash';
 
 // models
-import { TwitterScheduledStatusUpdate, TwitterScheduledStatusUpdateInterface } from '../../../../src/models/twitter/TwitterSchedulesSatusUpdate';
+import { TwitterScheduledStatusUpdate, TwitterScheduledStatusUpdateInterface } from '../../../../src/models/twitter/TwitterScheduledStatusUpdate';
 
 export class MockTwitterScheduledStatusUpdate extends TwitterScheduledStatusUpdate {
   public constructor() {

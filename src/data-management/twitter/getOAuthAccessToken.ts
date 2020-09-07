@@ -2,10 +2,8 @@
 import * as _ from 'lodash';
 
 // libraries
-import { utils } from '../../lib/utils';
-import { logger } from '../../lib/logger';
 import { env } from '../../lib/environment';
-import { authentication, cryptography } from '../../lib';
+import { authentication } from '../../lib';
 
 // models
 import { APIError } from '../../models/error';

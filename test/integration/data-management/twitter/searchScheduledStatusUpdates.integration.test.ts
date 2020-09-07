@@ -11,7 +11,7 @@ import * as cryptography from '../../../../src/lib/cryptography';
 import { documentClient } from '../../../../src/lib/aws';
 
 // models
-import { TwitterScheduledStatusUpdate } from '../../../../src/models/twitter/TwitterSchedulesSatusUpdate';
+import { TwitterScheduledStatusUpdate } from '../../../../src/models/twitter/TwitterScheduledStatusUpdate';
 
 // testees
 import * as twitterManager from '../../../../src/data-management/twitter';
@@ -19,7 +19,7 @@ import * as twitterManager from '../../../../src/data-management/twitter';
 // mock/static data
 import { MockTwitterScheduledStatusUpdate } from '../../../data/mock';
 
-let mockTwitterScheduledStatusUpdate: Partial<MockTwitterScheduledStatusUpdate>[] | Partial<TwitterScheduledStatusUpdate>[];
+let mockTwitterScheduledStatusUpdates: Partial<MockTwitterScheduledStatusUpdate>[] | Partial<TwitterScheduledStatusUpdate>[];
 
 // file constants/functions
 async function customStartUp() {
@@ -74,14 +74,14 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
     beforeEach(async () => {
       try {
         // create mock data
-        mockTwitterScheduledStatusUpdate = Array.from({ length: 20 }).map(() => new MockTwitterScheduledStatusUpdate());
-        // unseed mock data
+        mockTwitterScheduledStatusUpdates = Array.from({ length: 20 }).map(() => new MockTwitterScheduledStatusUpdate());
+        // seed mock data
         const batchWriteRequest = {
           RequestItems: {
-            [integrationTestEnv.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME]: mockTwitterScheduledStatusUpdate.map((mockTwitterScheduledTweet: Partial<MockTwitterScheduledStatusUpdate>) => {
+            [integrationTestEnv.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME]: mockTwitterScheduledStatusUpdates.map((mockTwitterScheduledStatusUpdate: Partial<MockTwitterScheduledStatusUpdate>) => {
               return {
                 PutRequest: {
-                  Item: mockTwitterScheduledTweet,
+                  Item: mockTwitterScheduledStatusUpdate,
                 },
               };
             }),
@@ -103,12 +103,12 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
         // unseed mock data
         const batchDeleteRequest = {
           RequestItems: {
-            [integrationTestEnv.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME]: mockTwitterScheduledStatusUpdate.map((mockTwitterScheduledTweet: Partial<MockTwitterScheduledStatusUpdate>) => {
+            [integrationTestEnv.DYNAMODB_SOCIAL_MDEIA_HUB_SCHEDULED_TWITTER_TWEETS_TABLE_NAME]: mockTwitterScheduledStatusUpdates.map((mockTwitterScheduledStatusUpdate: Partial<MockTwitterScheduledStatusUpdate>) => {
               return {
                 DeleteRequest: {
                   Key: {
-                    scheduledStatusUpdateId: mockTwitterScheduledTweet.scheduledStatusUpdateId,
-                    twitterScreenName: mockTwitterScheduledTweet.twitterScreenName,
+                    scheduledStatusUpdateId: mockTwitterScheduledStatusUpdate.scheduledStatusUpdateId,
+                    twitterScreenName: mockTwitterScheduledStatusUpdate.twitterScreenName,
                   },
                 },
               };
@@ -119,7 +119,7 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
         // validate response
         if (!batchDeleteResponse.UnprocessedItems || Object.keys(batchDeleteResponse.UnprocessedItems).length) throw new Error('Failed to delete all items from dynamodb');
         // reset mock data holders
-        mockTwitterScheduledStatusUpdate = [];
+        mockTwitterScheduledStatusUpdates = [];
       // return explicitly
       } catch (err) {
       // throw explicitly
@@ -131,7 +131,7 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
       try {
         // get test copy of
         // data used for test
-        const testMockTwitterScheduledStatusUpdates = mockTwitterScheduledStatusUpdate.slice(0, 10);
+        const testMockTwitterScheduledStatusUpdates = mockTwitterScheduledStatusUpdates.slice(0, 10);
         // set expectations
         const EXPECTED_STRING_TYPE_OF = 'string';
         const EXPECTED_ARRAY_CLASS_INSTANCE = Array;
@@ -141,7 +141,7 @@ describe('data-management/twitter/searchScheduledStatusUpdates integration tests
         let searchScheduledStatusUpdatesResponse;
         let found = 0;
         let tries = 0;
-        const maxTries = mockTwitterScheduledStatusUpdate.length;
+        const maxTries = mockTwitterScheduledStatusUpdates.length;
         while (tries < maxTries) {
           // run testee
           searchScheduledStatusUpdatesResponse = await twitterManager.searchScheduledStatusUpdates({
