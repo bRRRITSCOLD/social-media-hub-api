@@ -157,16 +157,12 @@ describe('data-management/twitter integration tests', () => {
       it("- should get a user's twitter timeline (a user's perosnal tweets) that matches a given criteria", async () => {
         try {
           // run testee
-          // const getUserTimelineResponse = await twitterManager.getAccountCredentialsVerification({
-          //   oAuthAccessToken: integrationTwitterTestEnv.TIWTTER_ACCESS_TOKEN,
-          //   oAuthAccessTokenSecret: integrationTwitterTestEnv.TIWTTER_ACCESS_TOKEN_SECRET,
-          // });
-          const getAccountCredentialsVerificationResponse = await twitterManager.getAccountCredentialsVerification({
-            oAuthAccessToken: 'asdfewgregerg',
-            oAuthAccessTokenSecret: 'asdfiuhgewuyifbweubf',
+          const getUserTimelineResponse = await twitterManager.getAccountCredentialsVerification({
+            oAuthAccessToken: integrationTwitterTestEnv.TIWTTER_ACCESS_TOKEN,
+            oAuthAccessTokenSecret: integrationTwitterTestEnv.TIWTTER_ACCESS_TOKEN_SECRET,
           });
           // validate results
-          expect(getAccountCredentialsVerificationResponse !== undefined).to.be.true;
+          expect(getUserTimelineResponse !== undefined).to.be.true;
           // return explicitly
           return;
         } catch (err) {

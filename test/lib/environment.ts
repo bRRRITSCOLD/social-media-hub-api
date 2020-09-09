@@ -22,7 +22,7 @@ export class IntegrationTestEnv extends Env implements IntegrationTestEnvInterfa
   }
 
   public async init(): Promise<void> {
-    super.init({
+    await super.init({
       ...require('../../src/configs/environment').default,
       options: {
         example: './.env.integration.test.example',
@@ -70,7 +70,7 @@ export class IntegrationTwitterTestEnv extends Env implements IntegrationTwitter
   }
 
   public async init(): Promise<void> {
-    super.init({
+    await super.init({
       ...require('../../src/configs/environment').default,
       options: {
         example: './.env.integration.twitter.test.example',
@@ -102,7 +102,7 @@ export class E2ETestEnv extends Env implements E2ETestEnvInterface {
   }
 
   public async init(): Promise<void> {
-    super.init({
+    await super.init({
       ...require('../../src/configs/environment').default,
       options: {
         example: './.env.e2e.test.example',
@@ -112,7 +112,16 @@ export class E2ETestEnv extends Env implements E2ETestEnvInterface {
   }
 }
 
-export class E2ETwitterTestEnv extends Env implements E2ETestEnvInterface {
+export interface E2ETwitterTestEnvInterface extends EnvInterface {
+  EMAIL_ADDRESS: string;
+  PASSWORD: string;
+  TIWTTER_ACCESS_TOKEN: string;
+  TIWTTER_ACCESS_TOKEN_SECRET: string;
+  TIWTTER_SCREEN_NAME: string;
+  TIWTTER_USER_ID: string;
+}
+
+export class E2ETwitterTestEnv extends Env implements E2ETwitterTestEnvInterface {
   // non-computed values
   public get EMAIL_ADDRESS(): string {
     return process.env.EMAIL_ADDRESS as string;
@@ -142,8 +151,22 @@ export class E2ETwitterTestEnv extends Env implements E2ETestEnvInterface {
     process.env.TIWTTER_ACCESS_TOKEN_SECRET = `${value}`;
   }
 
+  public get TIWTTER_SCREEN_NAME(): string {
+    return process.env.TIWTTER_SCREEN_NAME as string;
+  }
+  public set TIWTTER_SCREEN_NAME(value: string) {
+    process.env.TIWTTER_SCREEN_NAME = `${value}`;
+  }
+
+  public get TIWTTER_USER_ID(): string {
+    return process.env.TIWTTER_USER_ID as string;
+  }
+  public set TIWTTER_USER_ID(value: string) {
+    process.env.TIWTTER_USER_ID = `${value}`;
+  }
+
   public async init(): Promise<void> {
-    super.init({
+    await super.init({
       ...require('../../src/configs/environment').default,
       options: {
         example: './.env.e2e.twitter.test.example',
