@@ -14,7 +14,7 @@ const app = new cdk.App();
 const APIGatewayLambdaDynamoDBsStack = createAWSAPIGatewayLambdaDynamoDBsStack({
   dynamoDBTables: [
     {
-      tableName: 'scheduledTwitterTweets',
+      tableName: 'scheduledTwitterStatusUpdates',
       partitionKey: {
         name: 'scheduledStatusUpdateId',
         type: cdkDynamoDB.AttributeType.STRING,
